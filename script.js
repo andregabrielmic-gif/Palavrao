@@ -90,7 +90,7 @@ const words = [
   "sigla","fátuo","repor","reler","fugiu","lento","gueto","hífen","bugre","focar",
   "pular","demão","canil","corte","corar","custo","feira","mania","versa","míope",
   "sadio","ferir","sócio","harém","tumba","sugar","tênis","digna","penca","ceifa",
-  "bolos","doces", "disco", "circo", "rouco", "pisca", "prata", "brasa", "broxa",
+  "bolos","doces", "disco", "circo", "rouco", "pisca", "prata", "brasa", "broxa", "altar", "fruta", "blusa", "rampa", "palma", "placa"
 ];
 
 // Palavra alvo sorteada
@@ -258,3 +258,4 @@ document.addEventListener("keydown", (e) => {
     currentCol++;
   }
 });
+
