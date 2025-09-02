@@ -1,90 +1,130 @@
+/* Estilos Globais e Corpo da Página */
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background: #121213;
-  color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #121213;
+    color: white;
+    margin: 0;
 }
 
+h1 {
+    margin-top: 20px;
+}
+
+/* Tabuleiro do Jogo */
 #game {
-  display: grid;
-  grid-template-rows: repeat(7, 1fr);
-  gap: 5px;
-  justify-content: center;
-  margin: 20px auto;
+    display: grid;
+    grid-template-rows: repeat(7, 1fr);
+    gap: 5px;
+    margin: 20px;
 }
 
 .row {
-  display: grid;
-  grid-template-columns: repeat(5, 60px);
-  gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
 }
 
+/* Células (Tiles) */
 .tile {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #3a3a3c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  text-transform: uppercase;
-  font-weight: bold;
-  background: #121213;
-  color: white;
+    width: 60px;
+    height: 60px;
+    position: relative;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
 }
 
-.correct {
-  background: #538d4e;
-  border: none;
+/* Estilos para as Faces (Frente e Verso) */
+.tile .front,
+.tile .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* Para compatibilidade */
 }
 
-.present {
-  background: #b59f3b;
-  border: none;
+/* Estilo da Face da Frente */
+.tile .front {
+    border: 2px solid #3a3a3c;
 }
 
-.absent {
-  background: #3a3a3c;
-  border: none;
+/* Estilo da Face do Verso */
+.tile .back {
+    transform: rotateY(180deg);
+    border: 2px solid #3a3a3c;
 }
 
+/* Classe para destacar a célula selecionada (na frente) */
+.tile .front.selected {
+    border-color: #877456;
+}
+
+/* Animação de virar (no container) */
+.tile.flip {
+    transform: rotateY(180deg);
+}
+
+/* Cores de status aplicadas no verso */
+.tile .back.correct {
+    background-color: #538d4e;
+    border-color: #538d4e;
+}
+
+.tile .back.present {
+    background-color: #b59f3b;
+    border-color: #b59f3b;
+}
+
+.tile .back.absent {
+    background-color: #3a3a3c;
+    border-color: #3a3a3c;
+}
+
+/* Teclado Virtual */
 #keyboard {
-  margin-top: 20px;
-  display: grid;
-  grid-template-rows: repeat(3, auto);
-  gap: 5px;
-  justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .key-row {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
 }
 
 .key {
-  background: #818384;
-  border: none;
-  border-radius: 4px;
-  width: 40px;
-  height: 50px;
-  font-size: 1rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    padding: 18px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 4px;
+    background-color: #818384;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/* Estados das Teclas */
 .key.correct {
-  background: #538d4e;
+    background-color: #538d4e;
 }
 
 .key.present {
-  background: #b59f3b;
+    background-color: #b59f3b;
 }
 
 .key.absent {
-  background: #3a3a3c;
+    background-color: #3a3a3c;
 }
