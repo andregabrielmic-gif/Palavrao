@@ -56,8 +56,6 @@ function getStatuses(guess, target) {
   return status;
 }
 
-// --- FUNÇÕES PRINCIPAIS DO JOGO ---
-
 function startGame(mode) {
     gameMode = mode;
     currentRow = 0;
@@ -66,6 +64,7 @@ function startGame(mode) {
     targets = [];
     solvedStates = [];
 
+    // Limpa os tabuleiros
     document.querySelectorAll(".tile").forEach(tile => {
         tile.classList.remove("flip");
         const front = tile.querySelector(".front");
@@ -75,16 +74,19 @@ function startGame(mode) {
         back.classList.remove("correct", "present", "absent");
     });
     
+    // Reseta o teclado
     document.querySelectorAll(".key").forEach(key => {
         key.classList.remove("correct", "present", "absent");
         key.dataset.status = "unset";
     });
 
+    // Sorteia as palavras e CONTROLA A VISIBILIDADE DIRETAMENTE
     if (mode === 'solo') {
         targets.push(words[Math.floor(Math.random() * words.length)]);
         solvedStates.push(false);
-        soloContainer.classList.remove("hidden");
-        duetoContainer.classList.add("hidden");
+        // MUDANÇA AQUI:
+        soloContainer.style.display = 'block';
+        duetoContainer.style.display = 'none';
         tabSolo.classList.add("active");
         tabDueto.classList.remove("active");
     } else { // modo dueto
@@ -94,42 +96,15 @@ function startGame(mode) {
         targets.push(word2);
         solvedStates.push(false);
         solvedStates.push(false);
-        soloContainer.classList.add("hidden");
-        duetoContainer.classList.remove("hidden");
+        // MUDANÇA AQUI:
+        soloContainer.style.display = 'none';
+        duetoContainer.style.display = 'flex';
         tabSolo.classList.remove("active");
         tabDueto.classList.add("active");
     }
     console.log("Palavras alvo:", targets);
     updateSelection();
 }
-
-function revealGuess(guess) {
-    isAnimating = true;
-    const activeBoards = gameBoards[gameMode];
-    for (let i = 0; i < activeBoards.length; i++) {
-        if (!solvedStates[i]) {
-            const statuses = getStatuses(guess, targets[i]);
-            animateRowFlip(activeBoards[i], currentRow, statuses, guess);
-            if (statuses.every(s => s === 'correct')) { solvedStates[i] = true; }
-        }
-    }
-
-    setTimeout(() => {
-        isAnimating = false;
-        if (solvedStates.every(s => s === true)) {
-            setTimeout(() => alert("Parabéns, você acertou tudo!"), 100);
-            return;
-        }
-        if (currentRow >= maxRows - 1) {
-            alert("Fim de jogo! As palavras eram: " + targets.join(", ").toUpperCase());
-            return;
-        }
-        currentRow++;
-        currentCol = 0;
-        updateSelection();
-    }, wordLength * 300 + 500);
-}
-
 function animateRowFlip(boardElement, rowIndex, statuses, guess) {
     const rowElement = boardElement.querySelectorAll(".row")[rowIndex];
     const tiles = Array.from(rowElement.children);
@@ -233,3 +208,4 @@ function buildDOM() {
 }
 
 buildDOM(); // Constrói a página e inicia o jogo
+
