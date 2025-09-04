@@ -1,4 +1,4 @@
-// Versão Final (com ajuste de linhas por modo de jogo)
+// Versão Final (com navegação por setas)
 let words = [];
 
 let activeMode = 'solo';
@@ -215,6 +215,26 @@ function handleKeyPress(key) {
             return;
         }
         revealGuess(guess);
+    
+    // --- NOVO: Lógica para navegar com as setas do teclado ---
+    } else if (key === "ArrowUp") {
+        if (state.currentRow > 0) {
+            state.currentRow--;
+        }
+    } else if (key === "ArrowDown") {
+        // Apenas permite descer para a linha de digitação atual
+        if (state.currentRow < gameState[activeMode].currentRow) {
+            state.currentRow++;
+        }
+    } else if (key === "ArrowLeft") {
+        if (state.currentCol > 0) {
+            state.currentCol--;
+        }
+    } else if (key === "ArrowRight") {
+        if (state.currentCol < wordLength -1) {
+            state.currentCol++;
+        }
+    
     } else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
         activeBoards.forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
@@ -239,7 +259,7 @@ async function initialize() {
     try {
         const response = await fetch('palavras.txt');
         const text = await response.text();
-        words = text.split('\n').map(word => word.trim().toLowerCase()).filter(word => word.length === 5 && /^[a-zà-ÿ]+$/.test(word));
+        words = text.split('\n').map(word => word.trim().toLowerCase()).filter(word => word.length > 0 && /^[a-zà-ÿ]+$/.test(word));
         console.log(`${words.length} palavras carregadas com sucesso!`);
     } catch (error) {
         console.error("Erro ao carregar o arquivo de palavras:", error);
@@ -247,8 +267,6 @@ async function initialize() {
         return;
     }
 
-    // --- CORREÇÃO AQUI ---
-    // Agora, construímos o número de linhas baseado nas regras de cada modo
     for (const mode in gameBoards) {
         const boards = gameBoards[mode];
         const maxRowsForMode = gameState[mode].maxRows;
@@ -263,6 +281,7 @@ async function initialize() {
                     tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
                     tile.addEventListener('click', () => {
                         const state = gameState[activeMode];
+                        // Permite selecionar apenas na linha de digitação atual
                         if (r === state.currentRow && !isAnimating) {
                             state.currentCol = c;
                             updateSelection();
@@ -299,7 +318,8 @@ async function initialize() {
             state.solved.push(false);
         }
         for (let i = 0; i < numTargets; i++) {
-            state.boardState.push(Array(state.maxRows).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
+            const maxRowsForMode = gameState[mode].maxRows;
+            state.boardState.push(Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
         }
     });
 
