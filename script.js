@@ -1,4 +1,4 @@
-// Versão Final Separada: script.js
+// Versão Final Corrigida (Clique e Backspace restaurados)
 let words = [];
 
 let activeMode = 'solo';
@@ -192,17 +192,32 @@ function handleKeyPress(key) {
     const row = primaryBoard.querySelectorAll(".row")[state.currentRow];
     if (!row) return;
 
+    // CORREÇÃO 2: Lógica do Backspace simplificada e corrigida
     if (key === "Backspace") {
-        if (state.currentCol > 0) {
+        const tiles = Array.from(row.children);
+        // Se a célula atual estiver vazia e não for a primeira, move para trás
+        if (state.currentCol > 0 && tiles[state.currentCol - 1].querySelector('.front').textContent !== '' && tiles[state.currentCol]?.querySelector('.front').textContent === '') {
             state.currentCol--;
-            activeBoards.forEach(board => {
-                board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
-            });
         }
+
+        // Se o cursor está no final, move para a última letra
+        if (state.currentCol === wordLength) {
+            state.currentCol--;
+        }
+
+        // Apaga o conteúdo da célula atual
+        activeBoards.forEach(board => {
+            board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
+        });
+
     } else if (key === "Enter") {
         if (state.currentCol !== wordLength) {
-            alert("Complete a palavra!");
-            return;
+             const tiles = Array.from(row.children);
+             const isComplete = tiles.every(tile => tile.querySelector('.front').textContent !== '');
+             if (!isComplete) {
+                alert("Complete a palavra!");
+                return;
+             }
         }
         let guess = "";
         const tiles = Array.from(row.children);
@@ -219,7 +234,19 @@ function handleKeyPress(key) {
         activeBoards.forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
         });
-        state.currentCol++;
+        
+        // Lógica de cursor inteligente
+        const tiles = Array.from(row.children);
+        let nextEmptyCol = -1;
+        for (let i = state.currentCol + 1; i < wordLength; i++) {
+            if (tiles[i].querySelector(".front").textContent === "") { nextEmptyCol = i; break; }
+        }
+        if (nextEmptyCol === -1) {
+            for (let i = 0; i < state.currentCol; i++) {
+                if (tiles[i].querySelector(".front").textContent === "") { nextEmptyCol = i; break; }
+            }
+        }
+        state.currentCol = (nextEmptyCol !== -1) ? nextEmptyCol : wordLength;
     }
     updateSelection();
 }
@@ -239,7 +266,7 @@ async function initialize() {
     try {
         const response = await fetch('palavras.txt');
         const text = await response.text();
-        words = text.split('\n').map(word => word.trim()).filter(word => word.length > 0);
+        words = text.split('\n').map(word => word.trim()).filter(word => word.length > 0 && /^[a-zA-ZÀ-ÿ]+$/.test(word));
         console.log(`${words.length} palavras carregadas com sucesso!`);
     } catch (error) {
         console.error("Erro ao carregar o arquivo de palavras:", error);
@@ -254,6 +281,16 @@ async function initialize() {
             for (let c = 0; c < wordLength; c++) {
                 const tile = document.createElement("div"); tile.className = "tile";
                 tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
+
+                // CORREÇÃO 1: Adicionando o 'ouvinte de clique' de volta em cada célula
+                tile.addEventListener('click', () => {
+                    const state = gameState[activeMode];
+                    if (r === state.currentRow && !isAnimating) {
+                        state.currentCol = c;
+                        updateSelection();
+                    }
+                });
+
                 row.appendChild(tile);
             }
             container.appendChild(row);
