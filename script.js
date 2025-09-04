@@ -66,8 +66,9 @@ function getStatuses(guess, target) {
 
 // --- FUNÇÕES DE JOGO REESTRUTURADAS ---
 
-// NOVO: Função central para iniciar/reiniciar o jogo
+// NOVO: Função central para iniciar/reiniciar o jogo (VERSÃO CORRIGIDA)
 function startGame(mode) {
+    console.log("Iniciando modo:", mode);
     gameMode = mode;
     currentRow = 0;
     currentCol = 0;
@@ -75,17 +76,23 @@ function startGame(mode) {
     targets = [];
     solvedStates = [];
 
-    // Limpa todos os tabuleiros e o teclado
+    // Limpa o conteúdo de todos os tabuleiros existentes, em vez de reconstruí-los
     document.querySelectorAll(".tile").forEach(tile => {
-        tile.remove(); // Remove as células antigas
+        tile.classList.remove("flip");
+        const front = tile.querySelector(".front");
+        const back = tile.querySelector(".back");
+        front.textContent = '';
+        back.textContent = '';
+        back.classList.remove("correct", "present", "absent");
     });
-    buildGameBoards(); // Constrói as células novas
+    
+    // Reseta o teclado
     document.querySelectorAll(".key").forEach(key => {
         key.classList.remove("correct", "present", "absent");
         key.dataset.status = "unset";
     });
 
-    // Sorteia as palavras alvo para o modo escolhido
+    // Sorteia as palavras alvo e configura a visibilidade para o modo escolhido
     if (mode === 'solo') {
         targets.push(words[Math.floor(Math.random() * words.length)]);
         solvedStates.push(false);
@@ -96,7 +103,7 @@ function startGame(mode) {
     } else { // modo dueto
         targets.push(words[Math.floor(Math.random() * words.length)]);
         let word2 = words[Math.floor(Math.random() * words.length)];
-        while(word2 === targets[0]) { // Garante que a segunda palavra seja diferente
+        while(word2 === targets[0]) {
             word2 = words[Math.floor(Math.random() * words.length)];
         }
         targets.push(word2);
@@ -264,4 +271,5 @@ function setupPage() {
 }
 
 setupPage(); // Roda a configuração inicial da página
+
 
