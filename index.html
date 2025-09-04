@@ -8,8 +8,23 @@
 </head>
 <body>
     <h1>Termo</h1>
-    <div id="game"></div>
+
+    <nav class="game-tabs">
+        <button id="tab-solo" class="tab active">Solo</button>
+        <button id="tab-dueto" class="tab">Dueto</button>
+    </nav>
+
+    <div id="solo-container">
+        <div id="game-solo"></div>
+    </div>
+
+    <div id="dueto-container" class="hidden">
+        <div id="game-dueto1"></div>
+        <div id="game-dueto2"></div>
+    </div>
+
     <div id="keyboard"></div>
+    
     <script src="script.js"></script>
 </body>
 </html>
