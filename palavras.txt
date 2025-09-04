@@ -924,4 +924,5 @@ turno
 morto
 punho
 busto
+gelar
 jogos
