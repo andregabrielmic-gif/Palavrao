@@ -124,11 +124,17 @@ function handleKeyPress(key) {
     const row = rows[currentRow];
     const tiles = row.getElementsByClassName("tile");
 
+    // --- LÓGICA DO BACKSPACE ATUALIZADA ---
     if (key === "Backspace") {
-        if (currentCol > 0) {
-            currentCol--;
-            tiles[currentCol].querySelector(".front").textContent = "";
+        // Se a célula atual estiver vazia e não for a primeira, move o cursor para trás.
+        // Isso dá a sensação de apagar o caractere anterior.
+        if (currentCol > 0 && tiles[currentCol].querySelector(".front").textContent === "") {
+             currentCol--;
         }
+        
+        // Apaga o conteúdo da célula que está selecionada agora.
+        tiles[currentCol].querySelector(".front").textContent = "";
+        
         updateSelection();
         return;
     }
@@ -163,7 +169,6 @@ function handleKeyPress(key) {
     }
 
     if (key === "ArrowRight") {
-        // Permite mover o cursor até a posição 5 (fim da palavra)
         if (currentCol < wordLength) {
             currentCol++;
             updateSelection();
@@ -173,19 +178,15 @@ function handleKeyPress(key) {
 
     if (/^[a-zA-ZÀ-ÿ]$/.test(key)) {
         if (currentCol < wordLength) {
-            // 1. Coloca a letra na posição atual
             tiles[currentCol].querySelector(".front").textContent = key.toUpperCase();
 
-            // 2. Lógica inteligente para encontrar a próxima célula vazia
             let nextEmptyCol = -1;
-            // Procura a partir da posição atual (+1) até o fim
             for (let i = currentCol + 1; i < wordLength; i++) {
                 if (tiles[i].querySelector(".front").textContent === "") {
                     nextEmptyCol = i;
                     break;
                 }
             }
-            // Se não achou, procura do início da palavra até a posição atual
             if (nextEmptyCol === -1) {
                 for (let i = 0; i < currentCol; i++) {
                     if (tiles[i].querySelector(".front").textContent === "") {
@@ -195,12 +196,9 @@ function handleKeyPress(key) {
                 }
             }
             
-            // 3. Atualiza a posição do cursor
             if (nextEmptyCol !== -1) {
                 currentCol = nextEmptyCol;
             } else {
-                // Se não há mais células vazias, a palavra está cheia.
-                // Move o cursor para o "fim" para permitir pressionar Enter.
                 currentCol = wordLength; 
             }
             
@@ -257,6 +255,7 @@ function initializeGame() {
 document.addEventListener("keydown", (e) => handleKeyPress(e.key));
 
 initializeGame();
+
 
 
 
