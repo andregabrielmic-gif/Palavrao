@@ -1,5 +1,6 @@
-/* Versão Definitiva: style.css */
+/* VERSÃO DEFINITIVA - CORRIGE TUDO */
 
+/* Estilos Globais e Corpo da Página */
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -23,6 +24,7 @@ h1 { margin-top: 20px; }
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 5px;
+    margin-bottom: 5px;
 }
 
 /* Células e Animação 3D */
@@ -31,7 +33,7 @@ h1 { margin-top: 20px; }
     height: 60px;
     position: relative;
     transition: transform 0.6s;
-    transform-style: preserve-3d; /* <-- CORREÇÃO IMPORTANTE */
+    transform-style: preserve-3d; /* <-- CORREÇÃO DA ANIMAÇÃO */
 }
 
 .tile .front, .tile .back {
@@ -80,7 +82,7 @@ h1 { margin-top: 20px; }
 }
 .tab.active { background-color: #538d4e; border-color: #538d4e; }
 
-.hidden { display: none; } /* <-- REGRA IMPORTANTE */
+.hidden { display: none; } /* <-- REGRA QUE ESCONDE OS TABULEIROS */
 
 #solo-container { margin: 20px; }
 #dueto-container { display: flex; justify-content: center; gap: 20px; margin: 20px; }
