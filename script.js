@@ -124,15 +124,11 @@ function handleKeyPress(key) {
     const row = rows[currentRow];
     const tiles = row.getElementsByClassName("tile");
 
-    // --- LÓGICA DO BACKSPACE ATUALIZADA ---
     if (key === "Backspace") {
-        // Se a célula atual estiver vazia e não for a primeira, move o cursor para trás.
-        // Isso dá a sensação de apagar o caractere anterior.
         if (currentCol > 0 && tiles[currentCol].querySelector(".front").textContent === "") {
              currentCol--;
         }
         
-        // Apaga o conteúdo da célula que está selecionada agora.
         tiles[currentCol].querySelector(".front").textContent = "";
         
         updateSelection();
@@ -169,7 +165,8 @@ function handleKeyPress(key) {
     }
 
     if (key === "ArrowRight") {
-        if (currentCol < wordLength) {
+        // ALTERADO: A condição agora é 'wordLength - 1' para travar na última casa.
+        if (currentCol < wordLength - 1) {
             currentCol++;
             updateSelection();
         }
@@ -196,10 +193,10 @@ function handleKeyPress(key) {
                 }
             }
             
+            // ALTERADO: Se a palavra estiver cheia (nextEmptyCol === -1), o cursor não se move mais.
+            // Ele fica parado na última letra digitada.
             if (nextEmptyCol !== -1) {
                 currentCol = nextEmptyCol;
-            } else {
-                currentCol = wordLength; 
             }
             
             updateSelection();
@@ -255,6 +252,7 @@ function initializeGame() {
 document.addEventListener("keydown", (e) => handleKeyPress(e.key));
 
 initializeGame();
+
 
 
 
