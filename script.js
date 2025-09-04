@@ -1,4 +1,4 @@
-// Versão Final (com Setas e Backspace corrigidos)
+// Versão Final (com Backspace e Enter corrigidos)
 let words = [];
 
 let activeMode = 'solo';
@@ -183,9 +183,8 @@ function animateRowFlip(boardElement, rowIndex, statuses, guess) {
 }
 
 function handleKeyPress(event) {
-    // A função agora recebe o 'event' inteiro
     if (isAnimating) return;
-    const key = event.key; // Pegamos a tecla a partir do evento
+    const key = event.key;
     
     const state = gameState[activeMode];
     if (state.solved.every(s => s === true) || state.currentRow >= state.maxRows) return;
@@ -195,37 +194,24 @@ function handleKeyPress(event) {
     const row = primaryBoard.querySelectorAll(".row")[state.currentRow];
     if (!row) return;
 
-    // --- CORREÇÃO 1: LÓGICA DO BACKSPACE (estilo "Delete") ---
+    // --- CORREÇÃO 1: Lógica do Backspace (estilo texto) ---
     if (key === "Backspace") {
-        // Se o cursor estiver no final (depois de preencher), move para a última casa
-        if (state.currentCol === wordLength) {
+        if (state.currentCol > 0) {
             state.currentCol--;
+            activeBoards.forEach(board => {
+                board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
+            });
         }
-        // Apaga a letra na casa atual
-        activeBoards.forEach(board => {
-            board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
-        });
-
-    // --- CORREÇÃO 2: LÓGICA DAS SETAS DO TECLADO ---
-    } else if (key.startsWith("Arrow")) {
-        event.preventDefault(); // Impede o navegador de rolar a página
-        if (key === "ArrowLeft") {
-            if (state.currentCol > 0) state.currentCol--;
-        } else if (key === "ArrowRight") {
-            if (state.currentCol < wordLength - 1) state.currentCol++;
-        } else if (key === "ArrowUp") {
-            if (state.currentRow > 0) state.currentRow--;
-        } else if (key === "ArrowDown") {
-            if (state.currentRow < state.maxRows - 1) state.currentRow++;
-        }
-
     } else if (key === "Enter") {
         const tiles = Array.from(row.children);
+        // --- CORREÇÃO 2: Verifica se todas as casas estão preenchidas ---
         const isComplete = tiles.every(tile => tile.querySelector('.front').textContent !== '');
+
         if (!isComplete) {
-           alert("Complete a palavra!");
-           return;
+            alert("Complete a palavra!");
+            return;
         }
+
         let guess = "";
         for (let tile of tiles) {
             guess += tile.querySelector(".front").textContent;
@@ -236,22 +222,22 @@ function handleKeyPress(event) {
             return;
         }
         revealGuess(guess);
+    
+    } else if (key.startsWith("Arrow")) {
+        event.preventDefault();
+        if (key === "ArrowLeft") {
+            if (state.currentCol > 0) state.currentCol--;
+        } else if (key === "ArrowRight") {
+            if (state.currentCol < wordLength) state.currentCol++;
+        }
+        // Navegação vertical é complexa com a lógica atual de "próxima linha vazia",
+        // então manteremos apenas a navegação horizontal por enquanto para evitar bugs.
+    
     } else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
         activeBoards.forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
         });
-        
-        const tiles = Array.from(row.children);
-        let nextEmptyCol = -1;
-        for (let i = state.currentCol + 1; i < wordLength; i++) {
-            if (tiles[i].querySelector(".front").textContent === "") { nextEmptyCol = i; break; }
-        }
-        if (nextEmptyCol === -1) {
-            for (let i = 0; i < state.currentCol; i++) {
-                if (tiles[i].querySelector(".front").textContent === "") { nextEmptyCol = i; break; }
-            }
-        }
-        state.currentCol = (nextEmptyCol !== -1) ? nextEmptyCol : wordLength;
+        state.currentCol++;
     }
     updateSelection();
 }
@@ -259,9 +245,13 @@ function handleKeyPress(event) {
 function updateSelection() {
     const state = gameState[activeMode];
     document.querySelectorAll(".front").forEach(f => f.classList.remove("selected"));
-    if (state.currentCol < wordLength) {
+    
+    // Mostra a seleção na posição do cursor, mesmo que seja depois da última letra
+    if (state.currentCol <= wordLength) { 
         gameBoards[activeMode].forEach(board => {
-            const tile = board.querySelectorAll(".row")[state.currentRow]?.children[state.currentCol];
+            // Se o cursor estiver no final, seleciona a última casa
+            const colToSelect = Math.min(state.currentCol, wordLength - 1);
+            const tile = board.querySelectorAll(".row")[state.currentRow]?.children[colToSelect];
             if (tile) tile.querySelector(".front").classList.add("selected");
         });
     }
@@ -311,7 +301,6 @@ async function initialize() {
         for (let char of line) {
             const key = document.createElement("div"); key.className = "key";
             key.id = "key-" + char; key.textContent = char;
-            // O teclado virtual agora passa um objeto que imita um evento
             key.addEventListener('click', () => handleKeyPress({ key: char, preventDefault: () => {} }));
             row.appendChild(key);
         }
@@ -329,13 +318,12 @@ async function initialize() {
             state.targets.push(newWord);
             state.solved.push(false);
         }
+        const maxRowsForMode = gameState[mode].maxRows;
         for (let i = 0; i < numTargets; i++) {
-            const maxRowsForMode = gameState[mode].maxRows;
             state.boardState.push(Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
         }
     });
 
-    // O listener do teclado agora passa o evento 'e' inteiro
     document.addEventListener("keydown", e => handleKeyPress(e));
     tabSolo.addEventListener("click", () => switchGameMode("solo"));
     tabDueto.addEventListener("click", () => switchGameMode("dueto"));
