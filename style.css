@@ -128,3 +128,39 @@ h1 {
 .key.absent {
     background-color: #3a3a3c;
 }
+/* --- NOVOS ESTILOS PARA ABAS E MODO DUETO --- */
+
+/* Estilo para a navegação das abas */
+.game-tabs {
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 2px solid #3a3a3c;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 0 5px;
+}
+
+/* Estilo para a aba ativa */
+.tab.active {
+    background-color: #538d4e;
+    border-color: #538d4e;
+}
+
+/* Classe para esconder containers que não estão em uso */
+.hidden {
+    display: none;
+}
+
+/* Container do modo Dueto */
+#dueto-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Espaço entre os dois tabuleiros */
+}
