@@ -116,6 +116,7 @@ function revealRow(rowElement, statuses, guess) {
     }, wordLength * 400);
 }
 
+// Lida com toda a entrada do usuário (teclado físico e virtual)
 function handleKeyPress(key) {
     if (isAnimating || currentRow >= maxRows) return;
 
@@ -133,14 +134,16 @@ function handleKeyPress(key) {
     }
 
     if (key === "Enter") {
-        if (currentCol !== wordLength) {
-            alert("Complete a palavra!");
-            return;
-        }
         let guess = "";
         for (let i = 0; i < wordLength; i++) {
-            guess += tiles[i].querySelector(".front").textContent.toLowerCase();
+            const letter = tiles[i].querySelector(".front").textContent;
+            if (letter === "") {
+                alert("Complete a palavra!");
+                return;
+            }
+            guess += letter.toLowerCase();
         }
+        
         const normalizedGuess = normalize(guess);
         if (!words.some(w => normalize(w) === normalizedGuess)) {
             alert("Palavra não encontrada!");
@@ -160,6 +163,7 @@ function handleKeyPress(key) {
     }
 
     if (key === "ArrowRight") {
+        // Permite mover o cursor até a posição 5 (fim da palavra)
         if (currentCol < wordLength) {
             currentCol++;
             updateSelection();
@@ -169,8 +173,37 @@ function handleKeyPress(key) {
 
     if (/^[a-zA-ZÀ-ÿ]$/.test(key)) {
         if (currentCol < wordLength) {
+            // 1. Coloca a letra na posição atual
             tiles[currentCol].querySelector(".front").textContent = key.toUpperCase();
-            currentCol++;
+
+            // 2. Lógica inteligente para encontrar a próxima célula vazia
+            let nextEmptyCol = -1;
+            // Procura a partir da posição atual (+1) até o fim
+            for (let i = currentCol + 1; i < wordLength; i++) {
+                if (tiles[i].querySelector(".front").textContent === "") {
+                    nextEmptyCol = i;
+                    break;
+                }
+            }
+            // Se não achou, procura do início da palavra até a posição atual
+            if (nextEmptyCol === -1) {
+                for (let i = 0; i < currentCol; i++) {
+                    if (tiles[i].querySelector(".front").textContent === "") {
+                        nextEmptyCol = i;
+                        break;
+                    }
+                }
+            }
+            
+            // 3. Atualiza a posição do cursor
+            if (nextEmptyCol !== -1) {
+                currentCol = nextEmptyCol;
+            } else {
+                // Se não há mais células vazias, a palavra está cheia.
+                // Move o cursor para o "fim" para permitir pressionar Enter.
+                currentCol = wordLength; 
+            }
+            
             updateSelection();
         }
     }
@@ -224,6 +257,7 @@ function initializeGame() {
 document.addEventListener("keydown", (e) => handleKeyPress(e.key));
 
 initializeGame();
+
 
 
 
