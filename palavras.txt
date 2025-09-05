@@ -930,3 +930,5 @@ ducha
 trens
 fuzil
 podam
+freio
+gesso
