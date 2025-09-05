@@ -928,3 +928,5 @@ gelar
 jogos
 ducha
 trens
+fuzil
+podam
