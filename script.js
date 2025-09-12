@@ -332,26 +332,44 @@ async function initialize() {
 }
 
 initialize();
-// Script de troca de tema
-const toggleBtn = document.getElementById("theme-toggle");
-const body = document.body;
-
-// Define tema inicial
-if (!localStorage.getItem("theme")) {
-  localStorage.setItem("theme", "dark"); // começa no escuro
-}
-body.classList.add(localStorage.getItem("theme"));
-toggleBtn.textContent = localStorage.getItem("theme") === "dark" ? "🌙" : "☀️";
-
-// Alterna entre claro e escuro
-toggleBtn.addEventListener("click", () => {
-  if (body.classList.contains("dark")) {
-    body.classList.replace("dark", "light");
-    localStorage.setItem("theme", "light");
-    toggleBtn.textContent = "☀️";
-  } else {
-    body.classList.replace("light", "dark");
-    localStorage.setItem("theme", "dark");
-    toggleBtn.textContent = "🌙";
+// THEME TOGGLE — cole após initialize();
+(function(){
+  // procura botão por dois ids possíveis; cria se não existir
+  let btn = document.getElementById('toggle-theme') || document.getElementById('theme-toggle');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'toggle-theme';
+    btn.type = 'button';
+    btn.title = 'Alternar tema';
+    // tenta inserir logo depois do <h1>, senão no body
+    const h1 = document.querySelector('h1');
+    if (h1 && h1.parentNode) h1.parentNode.insertBefore(btn, h1.nextSibling);
+    else document.body.appendChild(btn);
   }
-});
+
+  // define tema inicial (prioriza localStorage)
+  const saved = localStorage.getItem('theme');
+  const initial = saved === 'light' ? 'light' : 'dark'; // default dark
+  document.body.classList.remove('dark','light');
+  document.body.classList.add(initial);
+
+  // atualiza ícone e acessibilidade
+  function updateBtn() {
+    btn.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
+    btn.setAttribute('aria-pressed', document.body.classList.contains('dark'));
+  }
+  updateBtn();
+
+  // alterna tema ao clicar
+  btn.addEventListener('click', () => {
+    if (document.body.classList.contains('dark')) {
+      document.body.classList.replace('dark','light');
+      localStorage.setItem('theme','light');
+    } else {
+      document.body.classList.replace('light','dark');
+      localStorage.setItem('theme','dark');
+    }
+    updateBtn();
+  });
+})();
+
