@@ -332,33 +332,26 @@ async function initialize() {
 }
 
 initialize();
-// Tema claro/escuro
-const themeBtn = document.getElementById("toggle-theme");
-let theme = localStorage.getItem("theme") || "dark";
-document.body.classList.add(theme);
+// Script de troca de tema
+const toggleBtn = document.getElementById("theme-toggle");
+const body = document.body;
 
-themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+// Define tema inicial
+if (!localStorage.getItem("theme")) {
+  localStorage.setItem("theme", "dark"); // começa no escuro
+}
+body.classList.add(localStorage.getItem("theme"));
+toggleBtn.textContent = localStorage.getItem("theme") === "dark" ? "🌙" : "☀️";
 
-themeBtn.addEventListener("click", () => {
-    document.body.classList.toggle("light");
-    document.body.classList.toggle("dark");
-
-    theme = document.body.classList.contains("light") ? "light" : "dark";
-    localStorage.setItem("theme", theme);
-    themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+// Alterna entre claro e escuro
+toggleBtn.addEventListener("click", () => {
+  if (body.classList.contains("dark")) {
+    body.classList.replace("dark", "light");
+    localStorage.setItem("theme", "light");
+    toggleBtn.textContent = "☀️";
+  } else {
+    body.classList.replace("light", "dark");
+    localStorage.setItem("theme", "dark");
+    toggleBtn.textContent = "🌙";
+  }
 });
-
-// Animação quando erra palavra
-function invalidWordAnimation(board, rowIndex) {
-    const row = board.querySelectorAll(".row")[rowIndex];
-    row.classList.add("shake");
-    setTimeout(() => row.classList.remove("shake"), 500);
-}
-
-// Animação quando acerta palavra
-function correctWordAnimation(board, rowIndex) {
-    const row = board.querySelectorAll(".row")[rowIndex];
-    row.classList.add("bounce");
-    setTimeout(() => row.classList.remove("bounce"), 600);
-}
-
