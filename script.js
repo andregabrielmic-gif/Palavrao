@@ -332,3 +332,33 @@ async function initialize() {
 }
 
 initialize();
+// Tema claro/escuro
+const themeBtn = document.getElementById("toggle-theme");
+let theme = localStorage.getItem("theme") || "dark";
+document.body.classList.add(theme);
+
+themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+
+themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("light");
+    document.body.classList.toggle("dark");
+
+    theme = document.body.classList.contains("light") ? "light" : "dark";
+    localStorage.setItem("theme", theme);
+    themeBtn.textContent = theme === "dark" ? "🌙" : "☀️";
+});
+
+// Animação quando erra palavra
+function invalidWordAnimation(board, rowIndex) {
+    const row = board.querySelectorAll(".row")[rowIndex];
+    row.classList.add("shake");
+    setTimeout(() => row.classList.remove("shake"), 500);
+}
+
+// Animação quando acerta palavra
+function correctWordAnimation(board, rowIndex) {
+    const row = board.querySelectorAll(".row")[rowIndex];
+    row.classList.add("bounce");
+    setTimeout(() => row.classList.remove("bounce"), 600);
+}
+
