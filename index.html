@@ -1,28 +1,83 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo Termo</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Termo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Tema escuro */
+    body.dark {
+      background: #121213;
+      color: #ffffff;
+    }
+
+    /* Tema claro */
+    body.light {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 1rem;
+    }
+
+    /* Botão do toggle */
+    #toggle-theme {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 9999;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #538d4e;
+      color: #fff;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background 0.3s, color 0.3s;
+    }
+    body.light #toggle-theme {
+      background: #e2e8f0;
+      color: #121213;
+      box-shadow: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>Termo</h1>
-    <nav class="game-tabs">
-        <button id="tab-solo" class="tab active">Solo</button>
-        <button id="tab-dueto" class="tab">Dueto</button>
-    </nav>
-    <div id="solo-container">
-        <div id="game-solo" class="game-board"></div>
-    </div>
-    <div id="dueto-container" style="display: none;">
-        <div id="game-dueto1" class="game-board"></div>
-        <div id="game-dueto2" class="game-board"></div>
-    </div>
-    <div id="keyboard"></div>
-    
-    <script src="script.js"></script>
+  <h1>Termo</h1>
+  <button id="toggle-theme" type="button" aria-label="Alternar tema">🌙</button>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('toggle-theme');
+      const saved = localStorage.getItem('theme');
+      const initial = saved === 'light' ? 'light' : 'dark'; // default escuro
+      document.body.classList.add(initial);
+
+      function updateBtn() {
+        btn.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
+      }
+      updateBtn();
+
+      btn.addEventListener('click', () => {
+        if (document.body.classList.contains('dark')) {
+          document.body.classList.replace('dark','light');
+          localStorage.setItem('theme','light');
+        } else {
+          document.body.classList.replace('light','dark');
+          localStorage.setItem('theme','dark');
+        }
+        updateBtn();
+      });
+    })();
+  </script>
 </body>
 </html>
-<button id="toggle-theme">🌙</button>
-
