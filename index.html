@@ -4,80 +4,60 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Termo</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    /* Tema escuro */
-    body.dark {
-      background: #121213;
-      color: #ffffff;
-    }
-
-    /* Tema claro */
-    body.light {
-      background: #f8fafc;
-      color: #1e293b;
-    }
-
-    h1 {
-      text-align: center;
-      padding: 1rem;
-    }
-
-    /* Botão do toggle */
-    #toggle-theme {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 9999;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      background: #538d4e;
-      color: #fff;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      transition: background 0.3s, color 0.3s;
-    }
-    body.light #toggle-theme {
-      background: #e2e8f0;
-      color: #121213;
-      box-shadow: none;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Termo</h1>
-  <button id="toggle-theme" type="button" aria-label="Alternar tema">🌙</button>
+  <header>
+    <h1>Termo</h1>
+    <button id="placar-btn" class="header-btn">📊</button>
+    <button id="toggle-theme" class="header-btn" type="button" aria-label="Alternar tema">🌙</button>
+  </header>
 
-  <script>
-    (function(){
-      const btn = document.getElementById('toggle-theme');
-      const saved = localStorage.getItem('theme');
-      const initial = saved === 'light' ? 'light' : 'dark'; // default escuro
-      document.body.classList.add(initial);
+  <div class="game-container">
+    <div class="game-tabs">
+        <button id="tab-solo" class="tab active">Solo</button>
+        <button id="tab-dueto" class="tab">Dueto</button>
+    </div>
 
-      function updateBtn() {
-        btn.textContent = document.body.classList.contains('dark') ? '🌙' : '☀️';
-      }
-      updateBtn();
+    <div id="solo-container">
+        <div id="game-solo" class="game-board"></div>
+    </div>
+    <div id="dueto-container" style="display: none;">
+        <div id="game-dueto1" class="game-board"></div>
+        <div id="game-dueto2" class="game-board"></div>
+    </div>
+  </div>
 
-      btn.addEventListener('click', () => {
-        if (document.body.classList.contains('dark')) {
-          document.body.classList.replace('dark','light');
-          localStorage.setItem('theme','light');
-        } else {
-          document.body.classList.replace('light','dark');
-          localStorage.setItem('theme','dark');
-        }
-        updateBtn();
-      });
-    })();
-  </script>
+  <div id="keyboard"></div>
+
+  <div id="placar-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close-btn">&times;</button>
+      <h2>Estatísticas</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span id="stat-jogos" class="stat-value">0</span>
+          <span class="stat-label">Jogos</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-vitorias" class="stat-value">0%</span>
+          <span class="stat-label">de Vitórias</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-sequencia" class="stat-value">0</span>
+          <span class="stat-label">Sequência</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-melhor-seq" class="stat-value">0</span>
+          <span class="stat-label">Melhor Seq.</span>
+        </div>
+      </div>
+      <h3>Distribuição de Tentativas</h3>
+      <div id="distribuicao-grafico" class="distribuicao-grid">
+        </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
