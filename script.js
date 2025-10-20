@@ -1,3 +1,6 @@
+// TESTE DE DIAGNÓSTICO: Esta caixa deve aparecer
+alert("TESTE DE CARREGAMENTO"); 
+
 let words = [];
 let activeMode = 'solo';
 let isAnimating = false;
@@ -273,7 +276,7 @@ function shakeCurrentRow() {
 }
 
 // ===================================================================
-// INÍCIO DAS ALTERAÇÕES
+// INÍCIO DA FUNÇÃO MODIFICADA
 // ===================================================================
 
 function handleKeyPress(event) {
@@ -287,7 +290,7 @@ function handleKeyPress(event) {
 
     // --- 1. NAVEGAÇÃO COM SETAS (COM PREVENTDEFAULT) ---
     if (key === "ArrowRight") {
-        event.preventDefault(); // <-- ALTERAÇÃO 1: Impede o navegador de rolar a página
+        event.preventDefault(); // <-- CORREÇÃO: Impede o navegador de rolar a página
         if (state.currentCol < wordLength - 1) { 
             state.currentCol++;
             updateSelection(); 
@@ -296,7 +299,7 @@ function handleKeyPress(event) {
     }
 
     if (key === "ArrowLeft") {
-        event.preventDefault(); // <-- ALTERAÇÃO 1: Impede o navegador de rolar a página
+        event.preventDefault(); // <-- CORREÇÃO: Impede o navegador de rolar a página
         if (state.currentCol > 0) { 
             state.currentCol--;
             updateSelection(); 
@@ -304,16 +307,19 @@ function handleKeyPress(event) {
         return; 
     }
 
-    // 2. CORREÇÃO DO BACKSPACE (Já estava da vez passada)
+    // 2. CORREÇÃO DO BACKSPACE
     if (key === "Backspace") {
         const currentTile = row.children[state.currentCol];
         if (!currentTile) return; 
 
+        // Se o tile ATUAL (selecionado) tiver texto, apaga-o e FICA LÁ.
         if (currentTile.querySelector(".front").textContent !== "") {
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
             });
         } 
+        // Se o tile atual JÁ ESTIVER VAZIO E não for o primeiro tile
+        // Então, move para trás e apaga o anterior (comportamento padrão).
         else if (state.currentCol > 0) {
             state.currentCol--; 
             gameBoards[activeMode].forEach(board => {
@@ -324,16 +330,19 @@ function handleKeyPress(event) {
         return; 
     } 
     
-    // 3. CORREÇÃO DO ENTER (Já estava da vez passada)
+    // 3. CORREÇÃO DO ENTER
     else if (key === "Enter") {
         const tiles = Array.from(row.children);
+        
+        // Nova verificação: checa se TODOS os tiles estão preenchidos
         const isComplete = tiles.every(tile => tile.querySelector(".front").textContent !== '');
         
-        if (!isComplete) { 
+        if (!isComplete) { // Se qualquer tile estiver vazio, balança
             shakeCurrentRow();
             return;
         }
 
+        // Se estiver completo, continua a lógica original
         const guess = tiles.map(tile => tile.querySelector(".front").textContent).join('');
         
         if (!words.some(w => normalize(w) === normalize(guess.toLowerCase()))) {
@@ -344,12 +353,14 @@ function handleKeyPress(event) {
         return; 
     } 
     
-    // 4. LÓGICA DE DIGITAR LETRA (Já estava da vez passada)
+    // 4. LÓGICA DE DIGITAR LETRA (AJUSTADA)
     else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
+        // Coloca a letra no quadrado selecionado
         gameBoards[activeMode].forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
         });
         
+        // Só avança o cursor se não estiver na última coluna
         if (state.currentCol < wordLength - 1) {
             state.currentCol++;
         }
@@ -357,6 +368,11 @@ function handleKeyPress(event) {
         return; 
     }
 }
+
+// ===================================================================
+// FIM DA FUNÇÃO MODIFICADA
+// ===================================================================
+
 
 function updateSelection() {
     const state = gameState[activeMode];
@@ -442,7 +458,7 @@ async function initialize() {
         state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
     });
 
-    // --- ALTERAÇÃO 2: Limpa o estado do teclado ao iniciar ---
+    // --- CORREÇÃO: Limpa o estado do teclado ao iniciar ---
     stats.keyboardState = {}; 
     // --------------------------------------------------------
 
