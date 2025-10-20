@@ -272,6 +272,10 @@ function shakeCurrentRow() {
     });
 }
 
+// ===================================================================
+// INÍCIO DA FUNÇÃO MODIFICADA
+// ===================================================================
+
 function handleKeyPress(event) {
     if (isAnimating) return;
     const key = event.key;
@@ -281,34 +285,94 @@ function handleKeyPress(event) {
     const row = primaryBoard.querySelectorAll(".row")[state.currentRow];
     if (!row) return;
 
-    if (key === "Backspace") {
-        if (state.currentCol > 0) {
+    // --- INÍCIO DAS NOVAS FUNCIONALIDADES E CORREÇÕES ---
+
+    // 1. NAVEGAÇÃO COM SETAS
+    if (key === "ArrowRight") {
+        // Só avança se não estiver na última coluna (índice 4)
+        if (state.currentCol < wordLength - 1) { 
+            state.currentCol++;
+            updateSelection(); // Atualiza a seleção visual
+        }
+        return; // Termina a função aqui
+    }
+
+    if (key === "ArrowLeft") {
+        // Só recua se não estiver na primeira coluna (índice 0)
+        if (state.currentCol > 0) { 
             state.currentCol--;
+            updateSelection(); // Atualiza a seleção visual
+        }
+        return; // Termina a função aqui
+    }
+
+    // 2. CORREÇÃO DO BACKSPACE
+    if (key === "Backspace") {
+        const currentTile = row.children[state.currentCol];
+        if (!currentTile) return; // Segurança
+
+        // Se o tile ATUAL (selecionado) tiver texto, apaga-o e FICA LÁ.
+        if (currentTile.querySelector(".front").textContent !== "") {
+            gameBoards[activeMode].forEach(board => {
+                board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
+            });
+        } 
+        // Se o tile atual JÁ ESTIVER VAZIO E não for o primeiro tile
+        // Então, move para trás e apaga o anterior (comportamento padrão).
+        else if (state.currentCol > 0) {
+            state.currentCol--; // Move o cursor para trás
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
             });
         }
-    } else if (key === "Enter") {
+        updateSelection(); // Atualiza a seleção visual
+        return; // Termina a função aqui
+    } 
+    
+    // 3. CORREÇÃO DO ENTER
+    else if (key === "Enter") {
         const tiles = Array.from(row.children);
-        const guess = tiles.map(tile => tile.querySelector(".front").textContent).join('');
 
-        if (guess.length < wordLength) {
+        // Nova verificação: checa se TODOS os tiles estão preenchidos
+        // 'every' garante que .textContent não é ""
+        const isComplete = tiles.every(tile => tile.querySelector(".front").textContent !== '');
+        
+        if (!isComplete) { // Se qualquer tile estiver vazio, balança
             shakeCurrentRow();
             return;
         }
+
+        // Se estiver completo, continua a lógica original
+        const guess = tiles.map(tile => tile.querySelector(".front").textContent).join('');
+        
         if (!words.some(w => normalize(w) === normalize(guess.toLowerCase()))) {
             shakeCurrentRow();
             return;
         }
         revealGuess(guess);
-    } else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
+        return; // Termina a função aqui
+    } 
+    
+    // 4. LÓGICA DE DIGITAR LETRA (AJUSTADA)
+    else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
+        // Coloca a letra no quadrado selecionado
         gameBoards[activeMode].forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
         });
-        state.currentCol++;
+        
+        // Só avança o cursor se não estiver na última coluna
+        if (state.currentCol < wordLength - 1) {
+            state.currentCol++;
+        }
+        updateSelection();
+        return; // Termina a função aqui
     }
-    updateSelection();
 }
+
+// ===================================================================
+// FIM DA FUNÇÃO MODIFICADA
+// ===================================================================
+
 
 function updateSelection() {
     const state = gameState[activeMode];
