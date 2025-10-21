@@ -1,6 +1,3 @@
-// TESTE DE DIAGNÓSTICO: Esta caixa deve aparecer
-alert("TESTE DE CARREGAMENTO"); 
-
 let words = [];
 let activeMode = 'solo';
 let isAnimating = false;
@@ -276,7 +273,7 @@ function shakeCurrentRow() {
 }
 
 // ===================================================================
-// INÍCIO DA FUNÇÃO MODIFICADA
+// ESTA É A VERSÃO CORRETA DA FUNÇÃO
 // ===================================================================
 
 function handleKeyPress(event) {
@@ -295,7 +292,7 @@ function handleKeyPress(event) {
             state.currentCol++;
             updateSelection(); 
         }
-        return; 
+        return; // Termina a função aqui
     }
 
     if (key === "ArrowLeft") {
@@ -304,13 +301,13 @@ function handleKeyPress(event) {
             state.currentCol--;
             updateSelection(); 
         }
-        return; 
+        return; // Termina a função aqui
     }
 
     // 2. CORREÇÃO DO BACKSPACE
     if (key === "Backspace") {
         const currentTile = row.children[state.currentCol];
-        if (!currentTile) return; 
+        if (!currentTile) return; // Segurança
 
         // Se o tile ATUAL (selecionado) tiver texto, apaga-o e FICA LÁ.
         if (currentTile.querySelector(".front").textContent !== "") {
@@ -321,13 +318,13 @@ function handleKeyPress(event) {
         // Se o tile atual JÁ ESTIVER VAZIO E não for o primeiro tile
         // Então, move para trás e apaga o anterior (comportamento padrão).
         else if (state.currentCol > 0) {
-            state.currentCol--; 
+            state.currentCol--; // Move o cursor para trás
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
             });
         }
-        updateSelection(); 
-        return; 
+        updateSelection(); // Atualiza a seleção visual
+        return; // Termina a função aqui
     } 
     
     // 3. CORREÇÃO DO ENTER
@@ -350,7 +347,7 @@ function handleKeyPress(event) {
             return;
         }
         revealGuess(guess);
-        return; 
+        return; // Termina a função aqui
     } 
     
     // 4. LÓGICA DE DIGITAR LETRA (AJUSTADA)
@@ -365,12 +362,12 @@ function handleKeyPress(event) {
             state.currentCol++;
         }
         updateSelection();
-        return; 
+        return; // Termina a função aqui
     }
 }
 
 // ===================================================================
-// FIM DA FUNÇÃO MODIFICADA
+// FIM DA FUNÇÃO
 // ===================================================================
 
 
