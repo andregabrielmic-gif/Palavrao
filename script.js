@@ -26,14 +26,54 @@ const closeModalBtn = document.querySelector('.modal-close-btn');
 let stats = {};
 
 // --- LÓGICA DO PLACAR ---
+
+// ===================================================================
+// FUNÇÃO getInitialStats ATUALIZADA (CORREÇÃO 1)
+// ===================================================================
 function getInitialStats() {
     const savedStats = localStorage.getItem('termoGameStats');
-    return savedStats ? JSON.parse(savedStats) : {
-        gamesPlayed: 0, wins: 0, currentStreak: 0, maxStreak: 0,
-        guessDistribution: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 },
-        keyboardState: {}
-    };
+    let statsData;
+
+    // Tenta carregar os dados salvos
+    try {
+        statsData = savedStats ? JSON.parse(savedStats) : {};
+    } catch (e) {
+        console.error("Erro ao carregar estatísticas, resetando.");
+        statsData = {};
+    }
+
+    // Estrutura padrão
+    const defaultStats = {
+        gamesPlayed: 0, 
+        wins: 0, 
+        currentStreak: 0, 
+        maxStreak: 0,
+        guessDistribution: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 },
+        // Nova estrutura para os teclados
+        keyboardStates: {
+            solo: {},
+            dueto: {}
+        }
+    };
+
+    // --- Lógica de Migração ---
+    // Se encontrarmos a ESTRUTURA ANTIGA (keyboardState no singular)
+    if (statsData.keyboardState) {
+        // Copia o teclado antigo para o modo 'solo'
+        statsData.keyboardStates = {
+            solo: { ...statsData.keyboardState }, // Copia o estado antigo
+            dueto: {} // Começa o dueto limpo
+        };
+        // Remove a chave antiga
+        delete statsData.keyboardState; 
+        console.log("Migrando estado do teclado para a nova estrutura.");
+    }
+
+    // Mescla os dados carregados com a estrutura padrão
+    // Isso garante que todas as chaves (novas e antigas) existam
+    return { ...defaultStats, ...statsData };
 }
+
 function saveStats() {
     localStorage.setItem('termoGameStats', JSON.stringify(stats));
 }
@@ -89,20 +129,43 @@ function updatePlacarModal() {
 function normalize(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 const PRIORITY = { unset: -1, absent: 0, present: 1, correct: 2 };
 
+// ===================================================================
+// FUNÇÃO updateKeyboard ATUALIZADA (CORREÇÃO 2)
+// ===================================================================
 function updateKeyboard(letter, status) {
     const normalizedLetter = normalize(letter).toLowerCase();
-    const currentPriority = PRIORITY[stats.keyboardState[normalizedLetter] || 'unset'];
+    
+    // Pega o "cérebro" do teclado do modo ATIVO
+    const activeKeyboardState = stats.keyboardStates[activeMode]; 
+    if (!activeKeyboardState) return; // Segurança
+
+    const currentPriority = PRIORITY[activeKeyboardState[normalizedLetter] || 'unset'];
     const newPriority = PRIORITY[status];
 
     if (newPriority > currentPriority) {
-        stats.keyboardState[normalizedLetter] = status;
+        // Salva o estado no teclado do modo correto (solo ou dueto)
+        activeKeyboardState[normalizedLetter] = status;
     }
 }
 
+// ===================================================================
+// FUNÇÃO updateKeyboardState ATUALIZADA (CORREÇÃO 3)
+// ===================================================================
 function updateKeyboardState() {
+    
+    // Pega o "cérebro" do teclado do modo ATIVO
+    const activeKeyboardState = stats.keyboardStates[activeMode];
+    if (!activeKeyboardState) {
+        console.warn("Nenhum estado de teclado para o modo:", activeMode);
+        return;
+    }
+
     document.querySelectorAll(".key").forEach(key => {
         const char = key.id.replace('key-', '');
-        const status = stats.keyboardState[char] || 'unset';
+        
+        // Lê o status do teclado do modo correto
+        const status = activeKeyboardState[char] || 'unset'; 
+        
         key.classList.remove('correct', 'present', 'absent');
         if (status !== 'unset') {
             key.classList.add(status);
@@ -110,22 +173,7 @@ function updateKeyboardState() {
     });
 }
 
-// --- CORREÇÃO 1 de 2: Adicionando a nova função de reset ---
-/**
- * DOCUMENTAÇÃO: resetKeyboardState
- * Objetivo: Limpa o estado lógico (stats.keyboardState) e visual (classes CSS)
- * do teclado. Essencial para trocar de modo de jogo.
- */
-function resetKeyboardState() {
-    // 1. Limpa o objeto de dados (o "cérebro" do teclado)
-    stats.keyboardState = {};
-    
-    // 2. Limpa o visual (remove as classes CSS de todas as teclas)
-    document.querySelectorAll(".key").forEach(key => {
-        key.classList.remove('correct', 'present', 'absent');
-    });
-}
-// --- FIM DA CORREÇÃO 1 ---
+// (A FUNÇÃO 'resetKeyboardState' NÃO É MAIS NECESSÁRIA E FOI REMOVIDA)
 
 function getStatuses(guess, target) {
     const g = normalize(guess).toLowerCase();
@@ -188,20 +236,21 @@ function loadState(mode) {
             });
         });
     });
-    updateKeyboardState();
+    updateKeyboardState(); // <-- Agora esta função sabe qual teclado (solo/dueto) carregar
     updateSelection();
 }
 
+// ===================================================================
+// FUNÇÃO switchGameMode ATUALIZADA (CORREÇÃO 4)
+// ===================================================================
 function switchGameMode(newMode) {
     if (activeMode === newMode) return;
     saveCurrentState();
 
-    // --- CORREÇÃO 2 de 2: Chamando a função de reset aqui! ---
-    // Antes de trocar de modo, nós limpamos o teclado.
-    resetKeyboardState();
-    // --- FIM DA CORREÇÃO 2 ---
+    // A chamada para resetKeyboardState() foi REMOVIDA daqui.
 
-    activeMode = newMode;
+    activeMode = newMode; // IMPORTANTE: Mudar o modo ANTES de carregar o estado
+    
     if (newMode === 'solo') {
         soloContainer.style.display = 'block';
         duetoContainer.style.display = 'none';
@@ -213,8 +262,13 @@ function switchGameMode(newMode) {
         tabSolo.classList.remove("active");
         tabDueto.classList.add("active");
     }
+    
+    // Agora o loadState vai carregar o novo modo e
+    // o updateKeyboardState (chamado dentro do loadState)
+    // vai ler o teclado correto (ex: stats.keyboardStates.dueto)
     loadState(newMode);
 }
+
 
 function revealGuess(guess) {
     isAnimating = true;
@@ -239,7 +293,7 @@ function revealGuess(guess) {
                 if (state.solved[i]) {
                     const rowElement = activeBoards[i].querySelectorAll(".row")[state.currentRow];
                     const tiles = Array.from(rowElement.children);
-              _       tiles.forEach((tile, j) => {
+                    tiles.forEach((tile, j) => {
                         setTimeout(() => tile.classList.add("bounce"), j * 100);
                     });
                 }
@@ -295,9 +349,6 @@ function shakeCurrentRow() {
     });
 }
 
-// ===================================================================
-// ESTA É A VERSÃO CORRETA DA FUNÇÃO
-// ===================================================================
 
 function handleKeyPress(event) {
     if (isAnimating) return;
@@ -310,7 +361,7 @@ function handleKeyPress(event) {
 
     // --- 1. NAVEGAÇÃO COM SETAS (COM PREVENTDEFAULT) ---
     if (key === "ArrowRight") {
-        event.preventDefault(); // <-- CORREÇÃO: Impede o navegador de rolar a página
+        event.preventDefault(); 
         if (state.currentCol < wordLength - 1) { 
             state.currentCol++;
             updateSelection(); 
@@ -319,7 +370,7 @@ function handleKeyPress(event) {
     }
 
     if (key === "ArrowLeft") {
-        event.preventDefault(); // <-- CORREÇÃO: Impede o navegador de rolar a página
+        event.preventDefault(); 
         if (state.currentCol > 0) { 
             state.currentCol--;
             updateSelection(); 
@@ -332,14 +383,11 @@ function handleKeyPress(event) {
         const currentTile = row.children[state.currentCol];
         if (!currentTile) return; // Segurança
 
-        // Se o tile ATUAL (selecionado) tiver texto, apaga-o e FICA LÁ.
         if (currentTile.querySelector(".front").textContent !== "") {
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
             });
         } 
-        // Se o tile atual JÁ ESTIVER VAZIO E não for o primeiro tile
-        // Então, move para trás e apaga o anterior (comportamento padrão).
         else if (state.currentCol > 0) {
             state.currentCol--; // Move o cursor para trás
             gameBoards[activeMode].forEach(board => {
@@ -353,16 +401,13 @@ function handleKeyPress(event) {
     // 3. CORREÇÃO DO ENTER
     else if (key === "Enter") {
         const tiles = Array.from(row.children);
-        
-        // Nova verificação: checa se TODOS os tiles estão preenchidos
         const isComplete = tiles.every(tile => tile.querySelector(".front").textContent !== '');
         
-        if (!isComplete) { // Se qualquer tile estiver vazio, balança
+        if (!isComplete) { 
             shakeCurrentRow();
             return;
         }
 
-        // Se estiver completo, continua a lógica original
         const guess = tiles.map(tile => tile.querySelector(".front").textContent).join('');
         
         if (!words.some(w => normalize(w) === normalize(guess.toLowerCase()))) {
@@ -375,12 +420,10 @@ function handleKeyPress(event) {
     
     // 4. LÓGICA DE DIGITAR LETRA (AJUSTADA)
     else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
-        // Coloca a letra no quadrado selecionado
         gameBoards[activeMode].forEach(board => {
             board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
-        });
+	});
         
-        // Só avança o cursor se não estiver na última coluna
         if (state.currentCol < wordLength - 1) {
             state.currentCol++;
         }
@@ -389,16 +432,12 @@ function handleKeyPress(event) {
     }
 }
 
-// ===================================================================
-// FIM DA FUNÇÃO
-// ===================================================================
-
 
 function updateSelection() {
     const state = gameState[activeMode];
     document.querySelectorAll(".front").forEach(f => f.classList.remove("selected"));
     if (state.currentCol < wordLength && state.currentRow < state.maxRows) {
-        gameBoards[activeMode].forEach(board => {
+  	    gameBoards[activeMode].forEach(board => {
             const tile = board.querySelectorAll(".row")[state.currentRow]?.children[state.currentCol];
             if (tile) tile.querySelector(".front").classList.add("selected");
         });
@@ -406,7 +445,7 @@ function updateSelection() {
 }
 
 async function initialize() {
-    stats = getInitialStats();
+    stats = getInitialStats(); // <-- Agora inicializa com a nova estrutura
     try {
         const response = await fetch('palavras.txt');
         const text = await response.text();
@@ -429,7 +468,7 @@ async function initialize() {
                     const tile = document.createElement("div");
                     tile.className = "tile";
                     tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
-      _               tile.addEventListener('click', () => {
+                    tile.addEventListener('click', () => {
                         const state = gameState[activeMode];
                         if (r === state.currentRow && !isAnimating) {
                             state.currentCol = c;
@@ -454,7 +493,7 @@ async function initialize() {
         for (let char of line) {
             const key = document.createElement("div"); key.className = "key";
             key.id = "key-" + char; key.textContent = char;
-          _   key.addEventListener('click', () => handleKeyPress({ key: char }));
+            key.addEventListener('click', () => handleKeyPress({ key: char }));
             row.appendChild(key);
         }
         if (line === "zxcvbnm") row.appendChild(backspaceKey);
@@ -478,9 +517,8 @@ async function initialize() {
         state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
     });
 
-    // --- CORREÇÃO: Usando a nova função de reset no início ---
-    resetKeyboardState();
-    // --------------------------------------------------------
+    // --- CORREÇÃO 5: A linha 'stats.keyboardState = {}' foi REMOVIDA daqui ---
+    // (A função getInitialStats agora cuida de tudo)
 
     document.addEventListener("keydown", handleKeyPress);
     tabSolo.addEventListener("click", () => switchGameMode("solo"));
@@ -488,26 +526,26 @@ async function initialize() {
     
     // Liga os botões do placar
     placarBtn.addEventListener('click', () => {
-        updatePlacarModal();
-        placarModal.style.display = 'flex';
+    	updatePlacarModal();
+    	placarModal.style.display = 'flex';
     });
     closeModalBtn.addEventListener('click', () => placarModal.style.display = 'none');
     window.addEventListener('click', (event) => {
-        if (event.target === placarModal) placarModal.style.display = 'none';
+    	if (event.target === placarModal) placarModal.style.display = 'none';
     });
 
     // Liga o botão de tema
     const themeBtn = document.getElementById('toggle-theme');
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.className = savedTheme;
-    themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+  	const savedTheme = localStorage.getItem('theme') || 'dark';
+  	document.body.className = savedTheme;
+  	themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
 
-    themeBtn.addEventListener('click', () => {
-        const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
-        document.body.className = currentTheme;
-        themeBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
-        localStorage.setItem('theme', currentTheme);
-    });
+  	themeBtn.addEventListener('click', () => {
+    	const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    	document.body.className = currentTheme;
+    	themeBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    	localStorage.setItem('theme', currentTheme);
+  	});
 
     loadState("solo");
 }
