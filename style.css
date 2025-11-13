@@ -95,10 +95,7 @@ h1 { 
     gap: 5px; 
 }
 
-/* * 5. Tamanho dos Blocos 
- * Reduzido para 50px para caber melhor na tela 
- * e evitar o scroll vertical
- */
+/* 5. Tamanho dos Blocos */
 .tile {
     width: 50px; 
     height: 50px; 
@@ -147,10 +144,6 @@ h1 { 
     justify-content: center; align-items: center;
     font-size: 0.9rem;
 }
-
-/* * ATUALIZAÇÃO: Usei data-attributes (do seu JS) 
- * para deixar o Enter e Backspace maiores.
- */
 .key[data-key="Enter"], .key[data-key="Backspace"] {
     flex-grow: 1.5; /* Enter e Backspace um pouco maiores */
 }
