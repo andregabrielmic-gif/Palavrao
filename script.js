@@ -6,7 +6,6 @@ const wordLength = 5;
 const gameState = {
     solo: { targets: [], solved: [], currentRow: 0, currentCol: 0, boardState: [], maxRows: 6 },
     dueto: { targets: [], solved: [], currentRow: 0, currentCol: 0, boardState: [], maxRows: 7 },
-    // ADICIONADO O MODO QUARTETO (com 9 tentativas)
     quarteto: { targets: [], solved: [], currentRow: 0, currentCol: 0, boardState: [], maxRows: 9 }
 };
 
@@ -14,15 +13,14 @@ const gameState = {
 const keyboard = document.getElementById("keyboard");
 const tabSolo = document.getElementById("tab-solo");
 const tabDueto = document.getElementById("tab-dueto");
-const tabQuarteto = document.getElementById("tab-quarteto"); // ADICIONADO
+const tabQuarteto = document.getElementById("tab-quarteto"); 
 const soloContainer = document.getElementById("solo-container");
 const duetoContainer = document.getElementById("dueto-container");
-const quartetoContainer = document.getElementById("quarteto-container"); // ADICIONADO
+const quartetoContainer = document.getElementById("quarteto-container"); 
 
 const gameBoards = {
     solo: [document.getElementById("game-solo")],
     dueto: [document.getElementById("game-dueto1"), document.getElementById("game-dueto2")],
-    // ADICIONADO
     quarteto: [ 
         document.getElementById("game-quarteto1"), 
         document.getElementById("game-quarteto2"),
@@ -59,7 +57,7 @@ function getInitialStats() {
         keyboardStates: {
             solo: {},
             dueto: {},
-            quarteto: {} // ADICIONADO
+            quarteto: {} 
         }
     };
 
@@ -67,7 +65,7 @@ function getInitialStats() {
         statsData.keyboardStates = {
             solo: { ...statsData.keyboardState }, 
             dueto: {},
-            quarteto: {} // ADICIONADO
+            quarteto: {} 
         };
         delete statsData.keyboardState; 
         console.log("Migrando estado do teclado para a nova estrutura.");
@@ -227,9 +225,6 @@ function loadState(mode) {
     updateSelection();
 }
 
-// ===================================================================
-// FUNÇÃO switchGameMode ATUALIZADA (PARA 3+ MODOS)
-// ===================================================================
 function switchGameMode(newMode) {
     if (activeMode === newMode) return;
     saveCurrentState();
@@ -248,18 +243,17 @@ function switchGameMode(newMode) {
     
     // 3. Ativa o container e a aba corretos
     if (newMode === 'solo') {
-        soloContainer.style.display = 'block';
+        soloContainer.style.display = 'flex'; // Mudado para 'flex' para centralizar
         tabSolo.classList.add("active");
     } else if (newMode === 'dueto') {
         duetoContainer.style.display = 'flex';
         tabDueto.classList.add("active");
     } else if (newMode === 'quarteto') {
-        // Usando 'flex' para o layout lado-a-lado, como você pediu
         quartetoContainer.style.display = 'flex'; 
         tabQuarteto.classList.add("active");
     }
 
-    loadState(newMode); // Carrega o estado do novo modo (e atualiza o teclado)
+    loadState(newMode); 
 }
 
 
@@ -438,7 +432,7 @@ async function initialize() {
   	stats.keyboardStates = {
   		solo: {},
   		dueto: {},
-  		quarteto: {} // ADICIONADO
+  		quarteto: {} 
   	};
 
   	try {
@@ -477,6 +471,10 @@ async function initialize() {
         });
     }
 
+    // ===================================================================
+    // *** CORREÇÃO DO JAVASCRIPT ***
+    // Adicionando 'data-key' para o CSS funcionar
+    // ===================================================================
     keyboard.innerHTML = '';
   	const layout = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
   	layout.forEach(line => {
@@ -484,10 +482,17 @@ async function initialize() {
       	const enterKey = document.createElement("div"); enterKey.className = "key"; enterKey.textContent = "Enter";
       	const backspaceKey = document.createElement("div"); backspaceKey.className = "key"; backspaceKey.textContent = "⌫";
 
+        // Adiciona data-key para o CSS estilizar Enter/Backspace
+        enterKey.setAttribute('data-key', 'Enter');
+        backspaceKey.setAttribute('data-key', 'Backspace');
+
       	if (line === "zxcvbnm") row.appendChild(enterKey);
       	for (let char of line) {
           	const key = document.createElement("div"); key.className = "key";
           	key.id = "key-" + char; key.textContent = char;
+            
+            key.setAttribute('data-key', char); // Adiciona data-key para todas as teclas
+
           	key.addEventListener('click', () => handleKeyPress({ key: char }));
           	row.appendChild(key);
       	}
@@ -497,56 +502,6 @@ async function initialize() {
       	enterKey.addEventListener('click', () => handleKeyPress({ key: 'Enter' }));
       	backspaceKey.addEventListener('click', () => handleKeyPress({ key: 'Backspace' }));
   	});
-
-    // ATUALIZADO PARA INCLUIR 'quarteto'
-  	['solo', 'dueto', 'quarteto'].forEach(mode => {
-      	const state = gameState[mode];
-      	state.targets = []; state.solved = [];
-        
-        // LÓGICA ATUALIZADA PARA O NÚMERO DE PALAVRAS
-      	let numTargets = 1; // Padrão para solo
-        if (mode === 'dueto') numTargets = 2;
-        if (mode === 'quarteto') numTargets = 4;
-
-      	for (let i = 0; i < numTargets; i++) {
-          	let newWord;
-          	do { newWord = words[Math.floor(Math.random() * words.length)]; } while (state.targets.includes(newWord));
-          	state.targets.push(newWord);
-          	state.solved.push(false);
-      	}
-      	const maxRowsForMode = gameState[mode].maxRows;
-      	state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
-  	});
-
-  	document.addEventListener("keydown", handleKeyPress);
-  	tabSolo.addEventListener("click", () => switchGameMode("solo"));
-  	tabDueto.addEventListener("click", () => switchGameMode("dueto"));
-  	tabQuarteto.addEventListener("click", () => switchGameMode("quarteto")); // ADICIONADO
-    
-  	// Liga os botões do placar
-  	placarBtn.addEventListener('click', () => {
-    	updatePlacarModal();
-    	placarModal.style.display = 'flex';
-  	});
-  	closeModalBtn.addEventListener('click', () => placarModal.style.display = 'none');
-  	window.addEventListener('click', (event) => {
-    	if (event.target === placarModal) placarModal.style.display = 'none';
-  	});
-
-  	// Liga o botão de tema
-  	const themeBtn = document.getElementById('toggle-theme');
-  	const savedTheme = localStorage.getItem('theme') || 'dark';
-  	document.body.className = savedTheme;
-  	themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-
-  	themeBtn.addEventListener('click', () => {
-    	const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
-    	document.body.className = currentTheme;
-    	themeBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
-    	localStorage.setItem('theme', currentTheme);
-  	});
-
-  	loadState("solo");
-}
-
-initialize();
+    // ===================================================================
+    // FIM DA CORREÇÃO DO JAVASCRIPT
+    // ===================================================================
