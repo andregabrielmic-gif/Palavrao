@@ -61,10 +61,9 @@ h1 {
 }
 
 
-/* 3. Containers dos Tabuleiros (Solo, Dueto, Quarteto) */
+/* 3. Containers dos Tabuleiros (Solo, Dueto) */
 #solo-container, 
-#dueto-container, 
-#quarteto-container {
+#dueto-container {
     display: flex;
     justify-content: center;
     gap: 15px; /* Espaçamento entre os tabuleiros */
@@ -73,18 +72,26 @@ h1 {
     box-sizing: border-box;
 }
 
-/* Layout específico do QUARTETO (lado-a-lado com scroll) */
+/* * ============================================
+ * *** A ÚNICA CORREÇÃO ESTÁ AQUI ***
+ * Mudei 'justify-content' de 'flex-start' para 'center'
+ * ============================================
+ */
 #quarteto-container {
-    overflow-x: auto; /* Permite scroll horizontal */
-    justify-content: flex-start; /* Alinha no começo para o scroll */
-    padding: 0 10px 10px 10px; /* Espaçamento para a barra de scroll */
+    display: flex;
+    justify-content: center; /* Era 'flex-start', mudei para 'center' */
+    gap: 15px;
+    margin: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto; /* Mantém o scroll se a tela for pequena */
+    padding: 0 10px 10px 10px; 
 }
 
 
 /* 4. O Tabuleiro e os Blocos */
 .game-board { 
     display: grid; 
-    /* grid-template-rows é definido pelo JS */
     gap: 5px; 
     flex-shrink: 0; /* Impede que os tabuleiros sejam "espremidos" */
 }
