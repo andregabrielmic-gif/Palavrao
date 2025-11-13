@@ -191,7 +191,7 @@ function saveCurrentState() {
                 const back = tile.querySelector('.back');
                 rowData.push({
                     letter: tile.querySelector('.front').textContent,
-                    status: back.className.match(/correct|present|absent/)?.[0] || null,
+Ã                   status: back.className.match(/correct|present|absent/)?.[0] || null,
                     isFlipped: tile.classList.contains('flip')
                 });
             });
@@ -347,7 +347,7 @@ function handleKeyPress(event) {
 
     if (key === "ArrowRight") {
         event.preventDefault(); 
-        if (state.currentCol < wordLength - 1) { 
+        if (state.currentCol < wordLength - 1) {SI
             state.currentCol++;
             updateSelection(); 
         }
@@ -355,6 +355,7 @@ function handleKeyPress(event) {
     }
 
     if (key === "ArrowLeft") {
+TA
         event.preventDefault(); 
         if (state.currentCol > 0) { 
             state.currentCol--;
@@ -370,13 +371,13 @@ function handleKeyPress(event) {
         if (currentTile.querySelector(".front").textContent !== "") {
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
-            });
+s          });
         } 
         else if (state.currentCol > 0) {
             state.currentCol--; 
             gameBoards[activeMode].forEach(board => {
                 board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
-            });
+A          });
         }
         updateSelection(); 
         return; 
@@ -416,11 +417,12 @@ function handleKeyPress(event) {
 
 
 function updateSelection() {
-    const state = gameState[activeMode];
+is.    const state = gameState[activeMode];
     document.querySelectorAll(".front").forEach(f => f.classList.remove("selected"));
     if (state.currentCol < wordLength && state.currentRow < state.maxRows) {
   	    gameBoards[activeMode].forEach(board => {
             const tile = board.querySelectorAll(".row")[state.currentRow]?.children[state.currentCol];
+A
             if (tile) tile.querySelector(".front").classList.add("selected");
         });
     }
@@ -437,7 +439,7 @@ async function initialize() {
 
   	try {
         const response = await fetch('palavras.txt');
-        const text = await response.text();
+s        const text = await response.text();
         words = text.split('\n').map(word => word.trim().toLowerCase()).filter(w => w.length === wordLength && /^[a-zà-ÿ]+$/.test(w));
     } catch (error) {
         console.error("Erro ao carregar o arquivo de palavras:", error);
@@ -447,7 +449,7 @@ async function initialize() {
 
     for (const mode in gameBoards) {
         const boards = gameBoards[mode];
-      	const maxRowsForMode = gameState[mode].maxRows;
+A      	const maxRowsForMode = gameState[mode].maxRows;
       	boards.forEach(boardElement => {
             boardElement.innerHTML = '';
           	for (let r = 0; r < maxRowsForMode; r++) {
@@ -455,14 +457,14 @@ async function initialize() {
               	row.className = "row";
               	for (let c = 0; c < wordLength; c++) {
                   	const tile = document.createElement("div");
-                  	tile.className = "tile";
+A                  	tile.className = "tile";
                   	tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
                   	tile.addEventListener('click', () => {
                       	const state = gameState[activeMode];
                       	if (r === state.currentRow && !isAnimating) {
                           	state.currentCol = c;
                           	updateSelection();
-                      	}
+Â                  	}
                   	});
                   	row.appendChild(tile);
               	}
@@ -497,7 +499,7 @@ async function initialize() {
           	row.appendChild(key);
       	}
       	if (line === "zxcvbnm") row.appendChild(backspaceKey);
-      	keyboard.appendChild(row);
+A      	keyboard.appendChild(row);
 
       	enterKey.addEventListener('click', () => handleKeyPress({ key: 'Enter' }));
       	backspaceKey.addEventListener('click', () => handleKeyPress({ key: 'Backspace' }));
@@ -505,3 +507,54 @@ async function initialize() {
     // ===================================================================
     // FIM DA CORREÇÃO DO JAVASCRIPT
     // ===================================================================
+
+  	['solo', 'dueto', 'quarteto'].forEach(mode => {
+      	const state = gameState[mode];
+      	state.targets = []; state.solved = [];
+        
+      	let numTargets = 1; // Padrão para solo
+        if (mode === 'dueto') numTargets = 2;
+        if (mode === 'quarteto') numTargets = 4;
+
+      	for (let i = 0; i < numTargets; i++) {
+          	let newWord;
+          	do { newWord = words[Math.floor(Math.random() * words.length)]; } while (state.targets.includes(newWord));
+          	state.targets.push(newWord);
+          	state.solved.push(false);
+      	}
+      	const maxRowsForMode = gameState[mode].maxRows;
+      	state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
+  	});
+
+  	document.addEventListener("keydown", handleKeyPress);
+  	tabSolo.addEventListener("click", () => switchGameMode("solo"));
+  	tabDueto.addEventListener("click", () => switchGameMode("dueto"));
+  	tabQuarteto.addEventListener("click", () => switchGameMode("quarteto")); 
+    
+  	// Liga os botões do placar
+  	placarBtn.addEventListener('click', () => {
+    	updatePlacarModal();
+    	placarModal.style.display = 'flex';
+  	});
+  	closeModalBtn.addEventListener('click', () => placarModal.style.display = 'none');
+  	window.addEventListener('click', (event) => {
+    	if (event.target === placarModal) placarModal.style.display = 'none';
+  	});
+
+  	// Liga o botão de tema
+  	const themeBtn = document.getElementById('toggle-theme');
+  	const savedTheme = localStorage.getItem('theme') || 'dark';
+  	document.body.className = savedTheme;
+  	themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+  	themeBtn.addEventListener('click', () => {
+    	const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    	document.body.className = currentTheme;
+    	themeBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    	localStorage.setItem('theme', currentTheme);
+  	});
+
+  	loadState("solo");
+}
+
+initialize();
