@@ -173,8 +173,6 @@ function updateKeyboardState() {
     });
 }
 
-// (A FUNÇÃO 'resetKeyboardState' NÃO É MAIS NECESSÁRIA E FOI REMOVIDA)
-
 function getStatuses(guess, target) {
     const g = normalize(guess).toLowerCase();
     const t = normalize(target).toLowerCase();
@@ -211,7 +209,7 @@ function saveCurrentState() {
                 });
             });
             boardData.push(rowData);
-        });
+	    });
         state.boardState.push(boardData);
     });
 }
@@ -366,7 +364,7 @@ function handleKeyPress(event) {
             state.currentCol++;
             updateSelection(); 
         }
-        return; // Termina a função aqui
+      	return; // Termina a função aqui
     }
 
     if (key === "ArrowLeft") {
@@ -414,8 +412,8 @@ function handleKeyPress(event) {
             shakeCurrentRow();
             return;
         }
-        revealGuess(guess);
-        return; // Termina a função aqui
+      	revealGuess(guess);
+      	return; // Termina a função aqui
     } 
     
     // 4. LÓGICA DE DIGITAR LETRA (AJUSTADA)
@@ -426,9 +424,9 @@ function handleKeyPress(event) {
         
         if (state.currentCol < wordLength - 1) {
             state.currentCol++;
-        }
-        updateSelection();
-        return; // Termina a função aqui
+      	}
+      	updateSelection();
+      	return; // Termina a função aqui
     }
 }
 
@@ -446,96 +444,111 @@ function updateSelection() {
 
 async function initialize() {
     stats = getInitialStats(); // <-- Agora inicializa com a nova estrutura
-    try {
+    
+    // ===================================================================
+    // 🚨 NOVA CORREÇÃO 🚨
+    // ===================================================================
+    // Força o reset dos teclados CADA VEZ que a página é carregada.
+    // Isso garante que, embora o PLACAR seja carregado, o JOGO
+    // (tabuleiro e teclado) seja sempre novo.
+  	stats.keyboardStates = {
+  		solo: {},
+  		dueto: {}
+  	};
+    // ===================================================================
+    // FIM DA NOVA CORREÇÃO
+    // ===================================================================
+
+  	try {
         const response = await fetch('palavras.txt');
         const text = await response.text();
         words = text.split('\n').map(word => word.trim().toLowerCase()).filter(w => w.length === wordLength && /^[a-zà-ÿ]+$/.test(w));
     } catch (error) {
         console.error("Erro ao carregar o arquivo de palavras:", error);
         alert("Não foi possível carregar a lista de palavras.");
-        return;
+      	return;
     }
 
     for (const mode in gameBoards) {
         const boards = gameBoards[mode];
-        const maxRowsForMode = gameState[mode].maxRows;
-        boards.forEach(boardElement => {
+      	const maxRowsForMode = gameState[mode].maxRows;
+      	boards.forEach(boardElement => {
             boardElement.innerHTML = '';
-            for (let r = 0; r < maxRowsForMode; r++) {
+          	for (let r = 0; r < maxRowsForMode; r++) {
                 const row = document.createElement("div");
-                row.className = "row";
-                for (let c = 0; c < wordLength; c++) {
-                    const tile = document.createElement("div");
-                    tile.className = "tile";
-                    tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
-                    tile.addEventListener('click', () => {
-                        const state = gameState[activeMode];
-                        if (r === state.currentRow && !isAnimating) {
-                            state.currentCol = c;
-                            updateSelection();
-                        }
-                    });
-                    row.appendChild(tile);
-                }
-                boardElement.appendChild(row);
-            }
+              	row.className = "row";
+              	for (let c = 0; c < wordLength; c++) {
+                  	const tile = document.createElement("div");
+                  	tile.className = "tile";
+                  	tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
+                  	tile.addEventListener('click', () => {
+                      	const state = gameState[activeMode];
+                      	if (r === state.currentRow && !isAnimating) {
+                          	state.currentCol = c;
+                          	updateSelection();
+                      	}
+                  	});
+                  	row.appendChild(tile);
+              	}
+              	boardElement.appendChild(row);
+          	}
         });
     }
 
     keyboard.innerHTML = '';
-    const layout = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
-    layout.forEach(line => {
-        const row = document.createElement("div"); row.className = "key-row";
-        const enterKey = document.createElement("div"); enterKey.className = "key"; enterKey.textContent = "Enter";
-        const backspaceKey = document.createElement("div"); backspaceKey.className = "key"; backspaceKey.textContent = "⌫";
+  	const layout = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+  	layout.forEach(line => {
+      	const row = document.createElement("div"); row.className = "key-row";
+      	const enterKey = document.createElement("div"); enterKey.className = "key"; enterKey.textContent = "Enter";
+      	const backspaceKey = document.createElement("div"); backspaceKey.className = "key"; backspaceKey.textContent = "⌫";
 
-        if (line === "zxcvbnm") row.appendChild(enterKey);
-        for (let char of line) {
-            const key = document.createElement("div"); key.className = "key";
-            key.id = "key-" + char; key.textContent = char;
-            key.addEventListener('click', () => handleKeyPress({ key: char }));
-            row.appendChild(key);
-        }
-        if (line === "zxcvbnm") row.appendChild(backspaceKey);
-        keyboard.appendChild(row);
+      	if (line === "zxcvbnm") row.appendChild(enterKey);
+      	for (let char of line) {
+          	const key = document.createElement("div"); key.className = "key";
+          	key.id = "key-" + char; key.textContent = char;
+          	key.addEventListener('click', () => handleKeyPress({ key: char }));
+          	row.appendChild(key);
+      	}
+      	if (line === "zxcvbnm") row.appendChild(backspaceKey);
+      	keyboard.appendChild(row);
 
-        enterKey.addEventListener('click', () => handleKeyPress({ key: 'Enter' }));
-        backspaceKey.addEventListener('click', () => handleKeyPress({ key: 'Backspace' }));
-    });
+      	enterKey.addEventListener('click', () => handleKeyPress({ key: 'Enter' }));
+      	backspaceKey.addEventListener('click', () => handleKeyPress({ key: 'Backspace' }));
+  	});
 
-    ['solo', 'dueto'].forEach(mode => {
-        const state = gameState[mode];
-        state.targets = []; state.solved = [];
-        const numTargets = (mode === 'solo') ? 1 : 2;
-        for (let i = 0; i < numTargets; i++) {
-            let newWord;
-            do { newWord = words[Math.floor(Math.random() * words.length)]; } while (state.targets.includes(newWord));
-            state.targets.push(newWord);
-            state.solved.push(false);
-        }
-        const maxRowsForMode = gameState[mode].maxRows;
-        state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
-    });
+  	['solo', 'dueto'].forEach(mode => {
+      	const state = gameState[mode];
+      	state.targets = []; state.solved = [];
+      	const numTargets = (mode === 'solo') ? 1 : 2;
+      	for (let i = 0; i < numTargets; i++) {
+          	let newWord;
+          	do { newWord = words[Math.floor(Math.random() * words.length)]; } while (state.targets.includes(newWord));
+          	state.targets.push(newWord);
+          	state.solved.push(false);
+      	}
+      	const maxRowsForMode = gameState[mode].maxRows;
+      	state.boardState = Array(numTargets).fill().map(() => Array(maxRowsForMode).fill().map(() => Array(wordLength).fill({ letter: '', status: null, isFlipped: false })));
+  	});
 
-    // --- CORREÇÃO 5: A linha 'stats.keyboardState = {}' foi REMOVIDA daqui ---
-    // (A função getInitialStats agora cuida de tudo)
+  	// A linha 'stats.keyboardState = {}' foi REMOVIDA daqui, pois
+  	// a nova correção acima (linha 428) já faz esse trabalho.
 
-    document.addEventListener("keydown", handleKeyPress);
-    tabSolo.addEventListener("click", () => switchGameMode("solo"));
-    tabDueto.addEventListener("click", () => switchGameMode("dueto"));
+  	document.addEventListener("keydown", handleKeyPress);
+  	tabSolo.addEventListener("click", () => switchGameMode("solo"));
+  	tabDueto.addEventListener("click", () => switchGameMode("dueto"));
     
-    // Liga os botões do placar
-    placarBtn.addEventListener('click', () => {
+  	// Liga os botões do placar
+  	placarBtn.addEventListener('click', () => {
     	updatePlacarModal();
     	placarModal.style.display = 'flex';
-    });
-    closeModalBtn.addEventListener('click', () => placarModal.style.display = 'none');
-    window.addEventListener('click', (event) => {
+  	});
+  	closeModalBtn.addEventListener('click', () => placarModal.style.display = 'none');
+  	window.addEventListener('click', (event) => {
     	if (event.target === placarModal) placarModal.style.display = 'none';
-    });
+  	});
 
-    // Liga o botão de tema
-    const themeBtn = document.getElementById('toggle-theme');
+  	// Liga o botão de tema
+  	const themeBtn = document.getElementById('toggle-theme');
   	const savedTheme = localStorage.getItem('theme') || 'dark';
   	document.body.className = savedTheme;
   	themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
@@ -547,7 +560,7 @@ async function initialize() {
     	localStorage.setItem('theme', currentTheme);
   	});
 
-    loadState("solo");
+  	loadState("solo");
 }
 
 initialize();
