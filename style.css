@@ -1,39 +1,39 @@
 /* Estilos base */
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0;
-    transition: background-color 0.3s, color 0.3s;
-    min-height: 100vh; /* Garante que o body ocupe a tela inteira */
-    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+    min-height: 100vh; /* Garante que o body ocupe a tela inteira */
+    box-sizing: border-box;
 }
 
 /* 1. Cabeçalho Centralizado */
-header { 
-    width: 100%; 
-    max-width: 650px; /* Limite para centralização */
-    text-align: center; 
-    position: relative; 
-    padding: 15px 0;
-    margin-bottom: 10px;
+header { 
+    width: 100%; 
+    max-width: 650px; /* Limite para centralização */
+    text-align: center; 
+    position: relative; 
+    padding: 15px 0;
+    margin-bottom: 10px;
 }
-h1 { 
-    margin: 0; 
-    font-size: 2.2rem;
+h1 { 
+    margin: 0; 
+    font-size: 2.2rem;
 }
 .header-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-    background-color: transparent;
-    color: inherit;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    background-color: transparent;
+    color: inherit;
 }
 #toggle-theme { right: 12px; }
 #placar-btn { right: 60px; }
@@ -41,73 +41,73 @@ h1 { 
 
 /* 2. Container principal do jogo */
 .game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    flex-grow: 1; /* Empurra o teclado para baixo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    flex-grow: 1; /* Empurra o teclado para baixo */
 }
 
 /* Abas */
 .game-tabs { margin-bottom: 20px; }
 .tab, .tab-button {
-    padding: 10px 20px; font-size: 1rem; font-weight: bold; border: 2px solid #3a3a3c;
-    background-color: transparent; color: white; cursor: pointer;
-    border-radius: 5px; margin: 0 5px;
+    padding: 10px 20px; font-size: 1rem; font-weight: bold; border: 2px solid #3a3a3c;
+    background-color: transparent; color: white; cursor: pointer;
+    border-radius: 5px; margin: 0 5px;
 }
-.tab.active, .tab-button.active { 
-    background-color: #538d4e; 
-    border-color: #538d4e; 
+.tab.active, .tab-button.active { 
+    background-color: #538d4e; 
+    border-color: #538d4e; 
 }
 
 
 /* 3. Containers dos Tabuleiros (Solo, Dueto, Quarteto) */
-#solo-container, 
-#dueto-container, 
+#solo-container, 
+#dueto-container, 
 #quarteto-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px; /* Espaçamento entre os tabuleiros */
-    margin: 10px 0;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espaçamento entre os tabuleiros */
+    margin: 10px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Layout específico do QUARTETO (lado-a-lado com scroll) */
 #quarteto-container {
-    overflow-x: auto; /* Permite scroll horizontal */
-    justify-content: flex-start; /* Alinha no começo para o scroll */
-    padding: 0 10px 10px 10px; /* Espaçamento para a barra de scroll */
+    overflow-x: auto; /* Permite scroll horizontal */
+    justify-content: flex-start; /* Alinha no começo para o scroll */
+    padding: 0 10px 10px 10px; /* Espaçamento para a barra de scroll */
 }
 
 
 /* 4. O Tabuleiro e os Blocos */
-.game-board { 
-    display: grid; 
-    /* grid-template-rows é definido pelo JS */
-    gap: 5px; 
-    flex-shrink: 0; /* Impede que os tabuleiros sejam "espremidos" */
+.game-board { 
+    display: grid; 
+    /* grid-template-rows é definido pelo JS */
+    gap: 5px; 
+    flex-shrink: 0; /* Impede que os tabuleiros sejam "espremidos" */
 }
 
-.row { 
-    display: grid; 
-    grid-template-columns: repeat(5, 1fr); 
-    gap: 5px; 
+.row { 
+    display: grid; 
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 5px; 
 }
 
 /* 5. Tamanho dos Blocos */
 .tile {
-    width: 50px; 
-    height: 50px; 
-    position: relative;
-    transition: transform 0.6s; transform-style: preserve-3d;
+    width: 50px; 
+    height: 50px; 
+    position: relative;
+    transition: transform 0.6s; transform-style: preserve-3d;
 }
 .tile .front, .tile .back {
-    position: absolute; width: 100%; height: 100%; display: flex;
-    justify-content: center; align-items: center; font-size: 1.8rem; /* Fonte menor */
-    font-weight: bold; text-transform: uppercase; backface-visibility: hidden;
-    border-radius: 4px;
-    box-sizing: border-box;
+    position: absolute; width: 100%; height: 100%; display: flex;
+    justify-content: center; align-items: center; font-size: 1.8rem; /* Fonte menor */
+    font-weight: bold; text-transform: uppercase; backface-visibility: hidden;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 .tile .front { border: 2px solid #3a3a3c; }
 .tile .back { transform: rotateY(180deg); border: 2px solid #3a3a3c; }
@@ -119,33 +119,33 @@ h1 { 
 
 
 /* 6. Teclado (Ajustado para não causar scroll) */
-#keyboard { 
-    margin-top: auto; /* Empurra o teclado para o fim */
-    padding-top: 10px; 
-    padding-bottom: 5px; 
-    width: 100%;
-    max-width: 500px;
-    box-sizing: border-box;
+#keyboard { 
+    margin-top: auto; /* Empurra o teclado para o fim */
+    padding-top: 10px; 
+    padding-bottom: 5px; 
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
 }
-.key-row { 
-    display: flex; 
-    justify-content: center; 
-    margin-bottom: 6px; 
-    width: 100%;
+.key-row { 
+    display: flex; 
+    justify-content: center; 
+    margin-bottom: 6px; 
+    width: 100%;
 }
 .key {
-    height: 50px;
-    flex-grow: 1; /* Teclas crescem para preencher */
-    flex-basis: 0; /* Base flexível */
-    margin: 0 3px; 
-    border: none; border-radius: 4px;
-    background-color: #818384; color: white; font-weight: bold;
-    text-transform: uppercase; cursor: pointer; display: flex;
-    justify-content: center; align-items: center;
-    font-size: 0.9rem;
+    height: 50px;
+    flex-grow: 1; /* Teclas crescem para preencher */
+    flex-basis: 0; /* Base flexível */
+    margin: 0 3px; 
+    border: none; border-radius: 4px;
+    background-color: #818384; color: white; font-weight: bold;
+    text-transform: uppercase; cursor: pointer; display: flex;
+    justify-content: center; align-items: center;
+    font-size: 0.9rem;
 }
 .key[data-key="Enter"], .key[data-key="Backspace"] {
-    flex-grow: 1.5; /* Enter e Backspace um pouco maiores */
+    flex-grow: 1.5; /* Enter e Backspace um pouco maiores */
 }
 .key.correct { background-color: #538d4e; }
 .key.present { background-color: #b59f3b; }
@@ -174,60 +174,60 @@ body.light .dist-bar { background-color: #e5e7eb; }
 
 /* ====== Animações ====== */
 @keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
 }
 .shake { animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both; }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-20px); }
-  60% { transform: translateY(-10px); }
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-20px); }
+  60% { transform: translateY(-10px); }
 }
 .bounce { animation: bounce 1s ease; }
 
 
 /* ====== Modal do Placar ====== */
 .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
 }
 .modal-content {
-    padding: 20px 30px; border-radius: 12px;
-    width: 90%; max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
-    text-align: center;
+    padding: 20px 30px; border-radius: 12px;
+    width: 90%; max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    text-align: center;
 }
 .modal-close-btn {
-    position: absolute; top: 10px; right: 15px;
-    background: none; border: none; font-size: 1.8rem;
-    cursor: pointer;
+    position: absolute; top: 10px; right: 15px;
+    background: none; border: none; font-size: 1.8rem;
+    cursor: pointer;
 }
 .stats-grid {
-    display: flex; justify-content: space-around;
-    margin: 20px 0;
+    display: flex; justify-content: space-around;
+    margin: 20px 0;
 }
 .stat-item { text-align: center; }
 .stat-value { display: block; font-size: 2rem; font-weight: bold; }
 .stat-label { font-size: 0.9rem; }
 .distribuicao-grid {
-    display: grid; grid-template-columns: 20px 1fr;
-    gap: 8px 12px; align-items: center;
-    margin-top: 10px;
+    display: grid; grid-template-columns: 20px 1fr;
+    gap: 8px 12px; align-items: center;
+    margin-top: 10px;
 }
 .dist-label { font-weight: bold; }
 .dist-bar-container {
-    width: 100%; height: 20px; border-radius: 4px;
+    width: 100%; height: 20px; border-radius: 4px;
 }
 .dist-bar {
-    height: 100%; border-radius: 4px;
-    display: flex; justify-content: flex-end;
-    align-items: center; padding-right: 8px;
-    font-size: 0.8rem; font-weight: bold; color: white;
-    background-color: #538d4e;
+    height: 100%; border-radius: 4px;
+    display: flex; justify-content: flex-end;
+    align-items: center; padding-right: 8px;
+    font-size: 0.8rem; font-weight: bold; color: white;
+    background-color: #538d4e;
 }
