@@ -1,73 +1,74 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Palavrão</title>
-  
-    <link rel="stylesheet" href="style.css?v=2">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Palavrão</title>
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
-<body class="dark">   <header>
-    <h1>Palavrão</h1>
-    <button id="placar-btn" class="header-btn">📊</button>
-    <button id="toggle-theme" class="header-btn" type="button" aria-label="Alternar tema">🌙</button>
-  </header>
+<body class="dark">
+  <header>
+    <h1>Palavrão</h1>
+    <button id="placar-btn" class="header-btn">📊</button>
+    <button id="toggle-theme" class="header-btn" type="button" aria-label="Alternar tema">🌙</button>
+  </header>
 
-    <div class="game-container">
-    
-    <div class="game-tabs">
-        <button id="tab-solo" class="tab active">Solo</button>
-        <button id="tab-dueto" class="tab">Dueto</button>
-        <button id="tab-quarteto" class="tab">Quarteto</button> 
-    </div>
+  <div class="game-container">
+    
+    <div class="game-tabs">
+        <button id="tab-solo" class="tab active">Solo</button>
+        <button id="tab-dueto" class="tab">Dueto</button>
+        <button id="tab-quarteto" class="tab">Quarteto</button> 
+    </div>
 
-    <div id="solo-container">
-        <div id="game-solo" class="game-board"></div>
-    </div>
-    
-    <div id="dueto-container" style="display: none;">
-        <div id="game-dueto1" class="game-board"></div>
-        <div id="game-dueto2" class="game-board"></div>
-    </div>
+    <div id="solo-container">
+        <div id="game-solo" class="game-board"></div>
+    </div>
+    
+    <div id="dueto-container" style="display: none;">
+        <div id="game-dueto1" class="game-board"></div>
+        <div id="game-dueto2" class="game-board"></div>
+    </div>
 
-    <div id="quarteto-container" style="display: none;">
-        <div id="game-quarteto1" class="game-board"></div>
-        <div id="game-quarteto2" class="game-board"></div>
-        <div id="game-quarteto3" class="game-board"></div>
-        <div id="game-quarteto4" class="game-board"></div>
-    </div>
+    <div id="quarteto-container" style="display: none;">
+        <div id="game-quarteto1" class="game-board"></div>
+        <div id="game-quarteto2" class="game-board"></div>
+        <div id="game-quarteto3" class="game-board"></div>
+        <div id="game-quarteto4" class="game-board"></div>
+    </div>
 
-  </div> <div id="keyboard"></div>
+  </div>
 
-    <div id="placar-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <button class="modal-close-btn">&times;</button>
-      <h2>Estatísticas</h2>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span id="stat-jogos" class="stat-value">0</span>
-          <span class="stat-label">Jogos</span>
-        </div>
-        <div class="stat-item">
-          <span id="stat-vitorias" class="stat-value">0%</span>
-          <span class="stat-label">de Vitórias</span>
-        </div>
-        <div class="stat-item">
-          <span id="stat-sequencia" class="stat-value">0</span>
-          <span class="stat-label">Sequência</span>
-        </div>
-        <div class="stat-item">
-          <span id="stat-melhor-seq" class="stat-value">0</span>
-          <span class="stat-label">Melhor Seq.</span>
-        </div>
-      </div>
-      <h3>Distribuição de Tentativas</h3>
-      <div id="distribuicao-grafico" class="distribuicao-grid">
-        </div>
-    </div>
-  </div>
+  <div id="keyboard"></div>
 
-    <script src="script.js?v=5"></script>
+  <div id="placar-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close-btn">&times;</button>
+      <h2>Estatísticas</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span id="stat-jogos" class="stat-value">0</span>
+          <span class="stat-label">Jogos</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-vitorias" class="stat-value">0%</span>
+          <span class="stat-label">de Vitórias</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-sequencia" class="stat-value">0</span>
+          <span class="stat-label">Sequência</span>
+        </div>
+        <div class="stat-item">
+          <span id="stat-melhor-seq" class="stat-value">0</span>
+          <span class="stat-label">Melhor Seq.</span>
+        </div>
+      </div>
+      <h3>Distribuição de Tentativas</h3>
+      <div id="distribuicao-grafico" class="distribuicao-grid">
+        </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=6"></script>
 </body>
 </html>
