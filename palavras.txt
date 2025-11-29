@@ -524,7 +524,6 @@ combo
 comer
 comum
 conde
-conga
 congo
 conta
 conto
@@ -1156,7 +1155,6 @@ manda
 mando
 manes
 manga
-mango
 manhã
 mania
 manja
@@ -2173,5 +2171,7 @@ zíper
 úvula
 jogos
 casas
+macas
+
 
 
