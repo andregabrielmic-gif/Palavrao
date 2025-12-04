@@ -340,10 +340,14 @@ function handleKeyPress(event) {
     if (isAnimating) return;
     const key = event.key;
     const state = gameState[activeMode];
-    if (state.solved.every(s => s === true) || state.currentRow >= state.maxRows) return;
-    const primaryBoard = gameBoards[activeMode][0];
-    const row = primaryBoard.querySelectorAll(".row")[state.currentRow];
-    if (!row) return;
+    
+    // --- CORREÇÃO 1: Bloquear qualquer ação se TODAS as palavras foram acertadas ---
+    if (state.solved.every(s => s === true)) return; 
+    
+    // Antigo: if (state.solved.every(s => s === true) || state.currentRow >= state.maxRows) return;
+    // O jogo deve continuar se houver mais linhas e palavras não resolvidas.
+    // Manter a verificação do limite de linhas é importante, mas o "all solved" é a prioridade.
+    if (state.currentRow >= state.maxRows) return;
 
     if (key === "ArrowRight") {
         event.preventDefault(); 
@@ -548,3 +552,4 @@ async function initialize() {
 }
 
 initialize();
+
