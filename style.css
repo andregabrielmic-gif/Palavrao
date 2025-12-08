@@ -246,3 +246,10 @@ body.light .dist-bar { background-color: #e5e7eb; }
     font-size: 0.8rem; font-weight: bold; color: white;
     background-color: #538d4e;
 }
+/* ... todo o seu CSS anterior ... */
+
+/* NOVO: Estilo para tabuleiro resolvido (opcional) */
+.solved-board {
+    opacity: 0.7; /* Deixa um pouco transparente */
+    transition: opacity 0.5s;
+}
