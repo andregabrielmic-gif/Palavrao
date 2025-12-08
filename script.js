@@ -35,6 +35,14 @@ const placarBtn = document.getElementById('placar-btn');
 const closeModalBtn = document.querySelector('.modal-close-btn');
 let stats = {};
 
+// Mapa de cores para desenhar o teclado
+const COLORS = {
+    correct: '#538d4e',
+    present: '#b59f3b',
+    absent: '#3a3a3c',
+    unset: '#818384'
+};
+
 // --- LÓGICA DO PLACAR ---
 
 function getInitialStats() {
@@ -44,7 +52,6 @@ function getInitialStats() {
     try {
         statsData = savedStats ? JSON.parse(savedStats) : {};
     } catch (e) {
-        console.error("Erro ao carregar estatísticas, resetando.");
         statsData = {};
     }
 
@@ -61,12 +68,8 @@ function getInitialStats() {
         }
     };
 
+    // Migração de dados antigos se necessário
     if (statsData.keyboardState) {
-        statsData.keyboardStates = {
-            solo: { ...statsData.keyboardState }, 
-            dueto: {},
-            quarteto: {} 
-        };
         delete statsData.keyboardState; 
     }
     
@@ -123,39 +126,81 @@ function updatePlacarModal() {
         graficoContainer.appendChild(barContainer);
     }
 }
-// --- FIM DA LÓGICA DO PLACAR ---
 
 function normalize(str) { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 const PRIORITY = { unset: -1, absent: 0, present: 1, correct: 2 };
 
-function updateKeyboard(letter, status) {
+// --- NOVA LÓGICA DE TECLADO ---
+// Agora aceita o índice do tabuleiro (boardIndex) para saber qual parte pintar
+function updateKeyboard(letter, status, boardIndex) {
     const normalizedLetter = normalize(letter).toLowerCase();
-    const activeKeyboardState = stats.keyboardStates[activeMode]; 
-    if (!activeKeyboardState) return; 
+    const modeState = stats.keyboardStates[activeMode]; 
+    if (!modeState) return; 
 
-    const currentPriority = PRIORITY[activeKeyboardState[normalizedLetter] || 'unset'];
-    const newPriority = PRIORITY[status];
+    // Inicializa se não existir
+    if (!modeState[normalizedLetter]) {
+        if (activeMode === 'solo') modeState[normalizedLetter] = 'unset';
+        else if (activeMode === 'dueto') modeState[normalizedLetter] = ['unset', 'unset'];
+        else if (activeMode === 'quarteto') modeState[normalizedLetter] = ['unset', 'unset', 'unset', 'unset'];
+    }
 
-    if (newPriority > currentPriority) {
-        activeKeyboardState[normalizedLetter] = status;
+    // Atualiza baseada na prioridade
+    if (activeMode === 'solo') {
+        const currentPriority = PRIORITY[modeState[normalizedLetter]];
+        if (PRIORITY[status] > currentPriority) {
+            modeState[normalizedLetter] = status;
+        }
+    } else {
+        // Para Dueto e Quarteto, atualizamos o índice específico do array
+        const currentStatus = modeState[normalizedLetter][boardIndex];
+        const currentPriority = PRIORITY[currentStatus];
+        if (PRIORITY[status] > currentPriority) {
+            modeState[normalizedLetter][boardIndex] = status;
+        }
     }
 }
 
 function updateKeyboardState() {
-    const activeKeyboardState = stats.keyboardStates[activeMode];
-    // Se não houver estado, limpa tudo visualmente
+    const modeState = stats.keyboardStates[activeMode];
+    
     document.querySelectorAll(".key").forEach(key => {
-        key.classList.remove('correct', 'present', 'absent');
-    });
+        // Limpa estilos inline antigos
+        key.style.background = '';
+        key.className = 'key'; // Reseta classes
 
-    if (!activeKeyboardState) return;
+        // Ignora teclas especiais
+        if (key.getAttribute('data-key').length > 1) return;
 
-    document.querySelectorAll(".key").forEach(key => {
-        const char = key.id.replace('key-', '');
-        const status = activeKeyboardState[char] || 'unset'; 
-        
-        if (status !== 'unset') {
-            key.classList.add(status);
+        const char = key.getAttribute('data-key');
+        // Se não tiver estado salvo para essa letra, sai
+        if (!modeState || !modeState[char]) return;
+
+        const data = modeState[char];
+
+        if (activeMode === 'solo') {
+            if (data !== 'unset') key.classList.add(data);
+        } 
+        else if (activeMode === 'dueto') {
+            // Cria gradiente linear (metade esquerda / metade direita)
+            const c1 = COLORS[data[0]] || COLORS.unset;
+            const c2 = COLORS[data[1]] || COLORS.unset;
+            key.style.background = `linear-gradient(90deg, ${c1} 50%, ${c2} 50%)`;
+        } 
+        else if (activeMode === 'quarteto') {
+            // Cria gradiente cônico para 4 quadrantes
+            // Ordem visual: TopLeft(0), TopRight(1), BotLeft(2), BotRight(3)
+            // Conic gradient começa 12h (Top). 
+            // 0-90deg (TopRight -> index 1)
+            // 90-180deg (BotRight -> index 3)
+            // 180-270deg (BotLeft -> index 2)
+            // 270-360deg (TopLeft -> index 0)
+            
+            const c1 = COLORS[data[0]] || COLORS.unset; // Top Left
+            const c2 = COLORS[data[1]] || COLORS.unset; // Top Right
+            const c3 = COLORS[data[2]] || COLORS.unset; // Bot Left
+            const c4 = COLORS[data[3]] || COLORS.unset; // Bot Right
+
+            key.style.background = `conic-gradient(${c2} 0% 25%, ${c4} 25% 50%, ${c3} 50% 75%, ${c1} 75% 100%)`;
         }
     });
 }
@@ -260,10 +305,13 @@ function revealGuess(guess) {
     const activeBoards = gameBoards[activeMode];
     let allSolvedNow = true;
     let anyBoardSolvedThisTurn = false;
+
     for (let i = 0; i < activeBoards.length; i++) {
+        // Só verifica tabuleiros que ainda NÃO foram resolvidos
         if (!state.solved[i]) {
             const statuses = getStatuses(guess, state.targets[i]);
-            animateRowFlip(activeBoards[i], state.currentRow, statuses, guess);
+            // Passa o índice 'i' para saber qual pedaço do teclado pintar
+            animateRowFlip(activeBoards[i], state.currentRow, statuses, guess, i);
             if (statuses.every(s => s === 'correct')) {
                 state.solved[i] = true;
                 anyBoardSolvedThisTurn = true;
@@ -271,19 +319,24 @@ function revealGuess(guess) {
         }
         if (!state.solved[i]) allSolvedNow = false;
     }
+
     setTimeout(() => {
         if (anyBoardSolvedThisTurn) {
             for (let i = 0; i < activeBoards.length; i++) {
                 if (state.solved[i]) {
+                    // Efeito visual de vitória na linha
                     const rowElement = activeBoards[i].querySelectorAll(".row")[state.currentRow];
                     const tiles = Array.from(rowElement.children);
                     tiles.forEach((tile, j) => {
                         setTimeout(() => tile.classList.add("bounce"), j * 100);
                     });
+                    // Adiciona classe para "apagar" o tabuleiro ganho (opcional)
+                    activeBoards[i].classList.add("solved-board");
                 }
             }
         }
         isAnimating = false;
+        
         if (allSolvedNow) {
             addWin(state.currentRow + 1);
             saveStats(); 
@@ -294,6 +347,7 @@ function revealGuess(guess) {
             }, 1000); 
             return;
         }
+        
         if (state.currentRow >= state.maxRows - 1) {
             addLoss();
             saveStats(); 
@@ -308,14 +362,17 @@ function revealGuess(guess) {
     }, wordLength * 300 + 500);
 }
 
-function animateRowFlip(boardElement, rowIndex, statuses, guess) {
+function animateRowFlip(boardElement, rowIndex, statuses, guess, boardIndex) {
     const rowElement = boardElement.querySelectorAll(".row")[rowIndex];
     const tiles = Array.from(rowElement.children);
     tiles.forEach((tile, i) => {
         const back = tile.querySelector(".back");
         back.textContent = guess[i].toUpperCase();
         back.classList.add(statuses[i]);
-        updateKeyboard(guess[i], statuses[i]);
+        
+        // Atualiza o pedaço específico do teclado
+        updateKeyboard(guess[i], statuses[i], boardIndex);
+        
         setTimeout(() => tile.classList.add("flip"), i * 300);
     });
     setTimeout(updateKeyboardState, wordLength * 300);
@@ -323,11 +380,14 @@ function animateRowFlip(boardElement, rowIndex, statuses, guess) {
 
 function shakeCurrentRow() {
     const state = gameState[activeMode];
-    gameBoards[activeMode].forEach(board => {
-        const rowElement = board.querySelectorAll(".row")[state.currentRow];
-        if (rowElement) {
-            rowElement.classList.add('shake');
-            setTimeout(() => rowElement.classList.remove('shake'), 600);
+    // Balança apenas os tabuleiros não resolvidos
+    gameBoards[activeMode].forEach((board, index) => {
+        if (!state.solved[index]) {
+            const rowElement = board.querySelectorAll(".row")[state.currentRow];
+            if (rowElement) {
+                rowElement.classList.add('shake');
+                setTimeout(() => rowElement.classList.remove('shake'), 600);
+            }
         }
     });
 }
@@ -337,10 +397,9 @@ function handleKeyPress(event) {
     if (isAnimating) return;
     const key = event.key;
     const state = gameState[activeMode];
+    
+    // Se todos estiverem resolvidos ou acabou as chances, para tudo.
     if (state.solved.every(s => s === true) || state.currentRow >= state.maxRows) return;
-    const primaryBoard = gameBoards[activeMode][0];
-    const row = primaryBoard.querySelectorAll(".row")[state.currentRow];
-    if (!row) return;
 
     if (key === "ArrowRight") {
         event.preventDefault(); 
@@ -360,19 +419,38 @@ function handleKeyPress(event) {
         return; 
     }
 
+    // --- CORREÇÃO DO BACKSPACE ---
     if (key === "Backspace") {
-        const currentTile = row.children[state.currentCol];
-        if (!currentTile) return; 
+        // Se a coluna atual tiver letra, apaga ela
+        let hasLetterCurrent = false;
+        // Verifica o primeiro board não resolvido para saber se tem letra
+        const firstActiveBoardIndex = state.solved.findIndex(s => s === false);
+        if (firstActiveBoardIndex !== -1) {
+             const tile = gameBoards[activeMode][firstActiveBoardIndex]
+                .querySelectorAll(".row")[state.currentRow]
+                .children[state.currentCol];
+             if (tile.querySelector(".front").textContent !== "") {
+                 hasLetterCurrent = true;
+             }
+        }
 
-        if (currentTile.querySelector(".front").textContent !== "") {
-            gameBoards[activeMode].forEach(board => {
-                board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
+        if (hasLetterCurrent) {
+            gameBoards[activeMode].forEach((board, index) => {
+                if (!state.solved[index]) { // SÓ APAGA NOS NÃO RESOLVIDOS
+                    board.querySelectorAll(".row")[state.currentRow]
+                         .children[state.currentCol]
+                         .querySelector(".front").textContent = "";
+                }
             });
         } 
         else if (state.currentCol > 0) {
             state.currentCol--; 
-            gameBoards[activeMode].forEach(board => {
-                board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = "";
+            gameBoards[activeMode].forEach((board, index) => {
+                if (!state.solved[index]) { // SÓ APAGA NOS NÃO RESOLVIDOS
+                    board.querySelectorAll(".row")[state.currentRow]
+                         .children[state.currentCol]
+                         .querySelector(".front").textContent = "";
+                }
             });
         }
         updateSelection(); 
@@ -380,6 +458,11 @@ function handleKeyPress(event) {
     } 
     
     else if (key === "Enter") {
+        // Verifica se completou usando o primeiro board não resolvido como referência
+        const firstActiveBoard = gameBoards[activeMode][state.solved.findIndex(s => s === false)];
+        if (!firstActiveBoard) return;
+
+        const row = firstActiveBoard.querySelectorAll(".row")[state.currentRow];
         const tiles = Array.from(row.children);
         const isComplete = tiles.every(tile => tile.querySelector(".front").textContent !== '');
         
@@ -399,9 +482,15 @@ function handleKeyPress(event) {
     } 
     
     else if (/^[a-zA-ZÀ-ÿ]$/.test(key) && state.currentCol < wordLength) {
-        gameBoards[activeMode].forEach(board => {
-            board.querySelectorAll(".row")[state.currentRow].children[state.currentCol].querySelector(".front").textContent = key.toUpperCase();
-	});
+        gameBoards[activeMode].forEach((board, index) => {
+            // --- TRAVA DE QUADROS RESOLVIDOS ---
+            // Só escreve se o board NÃO estiver resolvido
+            if (!state.solved[index]) {
+                board.querySelectorAll(".row")[state.currentRow]
+                     .children[state.currentCol]
+                     .querySelector(".front").textContent = key.toUpperCase();
+            }
+	    });
         
         if (state.currentCol < wordLength - 1) {
             state.currentCol++;
@@ -415,10 +504,17 @@ function handleKeyPress(event) {
 function updateSelection() {
     const state = gameState[activeMode];
     document.querySelectorAll(".front").forEach(f => f.classList.remove("selected"));
+    
+    // Se o jogo acabou, não seleciona nada
+    if (state.solved.every(s => s) || state.currentRow >= state.maxRows) return;
+
     if (state.currentCol < wordLength && state.currentRow < state.maxRows) {
-        gameBoards[activeMode].forEach(board => {
-            const tile = board.querySelectorAll(".row")[state.currentRow]?.children[state.currentCol];
-            if (tile) tile.querySelector(".front").classList.add("selected");
+        gameBoards[activeMode].forEach((board, index) => {
+            // Só mostra a seleção nos boards ativos
+            if (!state.solved[index]) {
+                const tile = board.querySelectorAll(".row")[state.currentRow]?.children[state.currentCol];
+                if (tile) tile.querySelector(".front").classList.add("selected");
+            }
         });
     }
 }
@@ -426,15 +522,12 @@ function updateSelection() {
 async function initialize() {
     stats = getInitialStats(); 
     
-    // --- CORREÇÃO DO TECLADO AMARELO ---
-    // Limpa o estado do teclado sempre que a página carrega
-    // para garantir um novo jogo visual.
+    // Limpa o teclado sempre que inicia
     stats.keyboardStates = {
         solo: {},
         dueto: {},
         quarteto: {} 
     };
-    // Salva o estado limpo
     saveStats();
 
     try {
@@ -452,6 +545,9 @@ async function initialize() {
         const maxRowsForMode = gameState[mode].maxRows;
         boards.forEach(boardElement => {
             boardElement.innerHTML = '';
+            // Remove classe de resolvido ao reiniciar
+            boardElement.classList.remove("solved-board");
+            
             for (let r = 0; r < maxRowsForMode; r++) {
                 const row = document.createElement("div");
                 row.className = "row";
@@ -459,9 +555,11 @@ async function initialize() {
                     const tile = document.createElement("div");
                     tile.className = "tile";
                     tile.innerHTML = `<div class="front"></div><div class="back"></div>`;
+                    // Clique no tile (opcional, ajustado para respeitar trava)
                     tile.addEventListener('click', () => {
                         const state = gameState[activeMode];
-                        if (r === state.currentRow && !isAnimating) {
+                        // Só muda cursor se não estiver animando E se o jogo não acabou
+                        if (r === state.currentRow && !isAnimating && !state.solved.every(s=>s)) {
                             state.currentCol = c;
                             updateSelection();
                         }
@@ -504,7 +602,7 @@ async function initialize() {
         const state = gameState[mode];
         state.targets = []; state.solved = [];
         
-        let numTargets = 1; // Padrão para solo
+        let numTargets = 1; 
         if (mode === 'dueto') numTargets = 2;
         if (mode === 'quarteto') numTargets = 4;
 
